@@ -211,7 +211,7 @@ export function StylistChatWidget() {
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
               </span>
               <div className="leading-tight">
-                <p className="text-sm font-semibold">Aster & Hem Stylist</p>
+                <p className="text-sm font-semibold">Hem · Personal Stylist</p>
               </div>
             </div>
             <button
@@ -240,8 +240,9 @@ export function StylistChatWidget() {
                       </>
                     ) : (
                       <>
-                        Hi, I&apos;m your Aster & Hem Stylist. Tell me what you&apos;re shopping for — a gift, a style, a room
-                        — and I&apos;ll find pieces you can buy right here. Try one of these:
+                        Hi, I&apos;m Hem, your Aster &amp; Hem personal stylist. Tell me what you&apos;re shopping for — an
+                        occasion, a style, or a piece you love — and I&apos;ll curate an edit you can buy right here. Try
+                        one of these:
                       </>
                     )}
                   </div>
@@ -279,7 +280,7 @@ export function StylistChatWidget() {
                             {m.role === "assistant" && (
                               <span className="mb-1 flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-accent">
                                 <Sparkles className="h-3 w-3" aria-hidden="true" />
-                                Stylist
+                                Hem
                               </span>
                             )}
                             <p className="text-pretty whitespace-pre-wrap">{renderInlineMarkdown(part.text)}</p>
@@ -442,8 +443,8 @@ export function StylistChatWidget() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={busy}
-              placeholder="e.g. a boho cushion for a friend"
-              aria-label="Message the stylist"
+                placeholder="e.g. an outfit for a spring wedding"
+                aria-label="Message Hem"
               className="h-11 flex-1 rounded-xl border border-border bg-background px-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
             />
             <button
