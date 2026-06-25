@@ -1,0 +1,208 @@
+import { convertToModelMessages, stepCountIs, streamText, tool, type UIMessage } from "ai"
+import { z } from "zod"
+import { searchCatalog } from "@/lib/catalog-search"
+import { getStripe } from "@/lib/stripe"
+import { fetchRecentPurchasesForStylist, sumMembershipSavings } from "@/lib/stripe-purchases"
+
+// The Adairs AI Stylist chat agent. It holds a natural conversation about what
+// the buyer is shopping for, searches the live catalogue for real products
+// (returned to the UI as cards with images), asks smart follow-up questions,
+// and hands off to the in-chat Stripe Agentic Commerce checkout when the buyer
+// is ready to purchase.
+
+export const maxDuration = 30
+
+const SYSTEM_PROMPT = `You are the Adairs AI Stylist — a warm, expert interior styling assistant for Adairs, a premium Australian home and linen brand. Your job is to understand what the customer really needs, curate REAL products, and help them BUY directly in this chat.
+
+VOICE
+- Warm, tasteful, and decisive — like a great in-store stylist. Australian spelling. Upbeat but never pushy.
+- Keep replies short and skimmable: 1-3 sentences. The product cards do the heavy lifting, so don't re-list items in prose.
+
+READING THE CUSTOMER
+- Infer intent from context before asking questions. "A gift for my boho friend" already tells you: it's a gift, the recipient likes boho. Just search.
+- Only ask ONE follow-up question, and only when it genuinely changes what you'd recommend (e.g. an unknown budget for a big-ticket item, or colour when the room palette matters). Never interrogate. When in doubt, search first and refine after.
+- Detect the real job-to-be-done: gifting (suggest giftable, safe-bet pieces), refreshing a room (think cohesively — a hero piece plus complements), or replacing something specific (be precise).
+
+USING THE CATALOGUE (searchCatalog tool)
+- Call searchCatalog the moment a shopping intent appears. Translate vague language into rich queries: include the style, colour, material, and mood (e.g. "boho cushion rust terracotta tassel textured").
+- You may call searchCatalog MORE THAN ONCE in a turn to build a thoughtful edit — e.g. search "boho cushion" then "boho throw" to suggest a coordinated pairing. Do this when it adds real value.
+- Always pass maxPrice when the customer signals a budget. Pass a category to sharpen results when the customer is specific.
+- If a search returns little or nothing, broaden the query (drop the most restrictive term) and try again rather than apologising.
+- Prices are USD (the in-chat checkout settles in USD). NEVER invent products, prices, variants, or stock — only reference items returned by searchCatalog.
+
+PERSONALISING FOR MEMBERS (getPurchaseHistory tool)
+- A line below states whether the shopper is a signed-in Linen Lovers member. Only signed-in members have a purchase history.
+- When a SIGNED-IN member references something they already own ("the throw I bought", "match my new quilt"), asks what goes with a past purchase, or asks for recommendations based on their orders, call getPurchaseHistory to ground your advice in what they ACTUALLY bought (item names, categories, dates). Then searchCatalog for complementary pieces (e.g. cushions and a rug that coordinate with their throw's colour and style) and explain why they pair well.
+- Reference their real items naturally ("Since you picked up the Aspen Sea Spray throw last month, these cushions echo its tones…"). Never invent past purchases — only mention what getPurchaseHistory returns. If it returns no orders, just style from scratch.
+- You CAN answer Linen Lovers MEMBERSHIP questions for a signed-in member — never deflect these to "My Linen Lovers" or Customer Support. When a signed-in member asks about their membership (how much they've SAVED, when their NEXT RENEWAL/billing date is, what their LINEN LOVERS NUMBER is, or whether their membership is active), call getMembershipDetails and answer directly from what it returns. Quote the figures EXACTLY — the savedToDate matches the "Saved with membership" total on their My Linen Lovers portal; never estimate or calculate these yourself.
+  - Savings: state savedToDate. If it's $0.00, say they haven't recorded any member savings yet and that they'll save 10% on future orders by entering their Linen Lovers number at checkout.
+  - Renewal: give nextRenewalDate. If willRenew is false (cancelled or set to cancel), gently note the membership won't auto-renew rather than implying it will.
+  - Linen Lovers number: give linenLoversNumber. If it's null, let them know there's no number on their account yet and they can add one in My Linen Lovers.
+  - If the shopper isn't signed in, warmly invite them to sign in to their Linen Lovers account so you can pull these details.
+- If the shopper is NOT signed in but asks for purchase-based recommendations, warmly let them know they can sign in to their Linen Lovers account (the "My Linen Lovers" page) so you can tailor picks to their order history — then help them anyway based on what they tell you.
+
+CLOSING THE SALE
+- After showing products, give one decisive recommendation ("If it were me, I'd go the rust Huxley — it nails that boho look") and a quick styling tip.
+- When they're ready, tell them to tap "Add" on any card and check out securely in this chat: you complete the purchase on their behalf via Stripe's agentic checkout, with a spend cap and no card details shared. They can choose delivery or free pick up in store at checkout.
+- If a customer is a Linen Lovers member (or asks about savings/delivery), let them know they can enter their Linen Lovers number at checkout to save 10% and unlock free delivery on orders over $50 (otherwise free delivery is on orders over $175; standard delivery is a flat $19.95).
+
+Be the stylist people remember: insightful, efficient, and genuinely helpful.`
+
+const searchCatalogTool = tool({
+  description:
+    "Search the live Adairs product catalogue for real, purchasable products. Call this whenever the customer expresses any shopping intent (a gift, a style, a colour, a room, a category, or a budget). Returns matching products with images and USD prices that are rendered to the customer as shoppable cards.",
+  inputSchema: z.object({
+    query: z
+      .string()
+      .describe(
+        "Free-text description of what to find, including style words and colours, e.g. 'boho cushion in rust', 'coastal throw', 'luxe velvet'.",
+      ),
+    category: z
+      .string()
+      .nullable()
+      .describe(
+        "Optional product category to restrict to, e.g. 'Cushions', 'Throws and Blankets', 'Rugs and Mats', 'Bed Linen', 'Lighting'. Use null if not relevant.",
+      ),
+    maxPrice: z
+      .number()
+      .nullable()
+      .describe("Optional maximum price in USD dollars (e.g. 100). Use null when the customer gave no budget."),
+    limit: z
+      .number()
+      .nullable()
+      .describe("Optional max number of products to return (1-10). Use null to default to a curated handful."),
+  }),
+  execute: async ({ query, category, maxPrice, limit }) => {
+    const result = searchCatalog({
+      query,
+      category: category ?? undefined,
+      maxPrice: maxPrice ?? undefined,
+      limit: limit ?? undefined,
+    })
+    // Return a compact, agent-friendly view. The full product objects (incl.
+    // images) flow to the client via this tool output for rendering + checkout.
+    return {
+      matchedCategory: result.matchedCategory,
+      count: result.count,
+      products: result.products.map((p) => ({
+        id: p.id,
+        name: p.name,
+        variant: p.variant,
+        category: p.category,
+        price: p.price,
+        image: p.image,
+        url: p.url,
+        featured: p.featured,
+      })),
+    }
+  },
+})
+
+export async function POST(req: Request) {
+  const { messages, customerId }: { messages: UIMessage[]; customerId?: string | null } = await req.json()
+
+  // Logic check: is this a signed-in Linen Lovers member? Only then can we read
+  // their Stripe purchase history to personalise recommendations.
+  const memberCustomerId = typeof customerId === "string" && customerId.startsWith("cus_") ? customerId : null
+
+  // Tool: pull the member's recent product orders from Stripe so the Stylist can
+  // recommend pieces that complement what they already own. Gated on sign-in.
+  const getPurchaseHistoryTool = tool({
+    description:
+      "Retrieve the signed-in Linen Lovers member's recent Adairs orders (item names, categories, dates, totals). Call this when a signed-in member references a past purchase or asks for recommendations based on what they've bought, so suggestions can complement items they already own. Returns loggedIn:false when the shopper isn't signed in.",
+    inputSchema: z.object({}),
+    execute: async () => {
+      if (!memberCustomerId) return { loggedIn: false as const, purchases: [] }
+      const stripe = getStripe()
+      if (!stripe) return { loggedIn: true as const, purchases: [], note: "Purchase history is unavailable right now." }
+      try {
+        const purchases = await fetchRecentPurchasesForStylist(stripe, memberCustomerId)
+        return { loggedIn: true as const, count: purchases.length, purchases }
+      } catch (error) {
+        console.log("[v0] getPurchaseHistory error:", error instanceof Error ? error.message : error)
+        return { loggedIn: true as const, purchases: [], note: "Couldn't load purchase history." }
+      }
+    },
+  })
+
+  // Tool: report the signed-in member's Linen Lovers membership details —
+  // savings to date, next renewal date, their Linen Lovers number, and status.
+  // These are read straight from Stripe using the SAME sources as the My Linen
+  // Lovers portal (sumMembershipSavings for savings, the subscription's current
+  // period end for renewal, the customer's member_id metadata for the number),
+  // so anything the Stylist quotes matches that page exactly.
+  const getMembershipDetailsTool = tool({
+    description:
+      "Get the signed-in Linen Lovers member's membership details: total savings to date (the exact 'Saved with membership' figure on their My Linen Lovers portal), their next renewal/billing date, their Linen Lovers number, membership status, and plan price. Call this whenever the member asks anything about their membership — how much they've saved, when their next renewal is, what their Linen Lovers number is, or whether they're still active. Returns loggedIn:false when the shopper isn't signed in.",
+    inputSchema: z.object({}),
+    execute: async () => {
+      if (!memberCustomerId) return { loggedIn: false as const }
+      const stripe = getStripe()
+      if (!stripe) return { loggedIn: true as const, note: "Membership details are unavailable right now." }
+      try {
+        const usd = (cents: number) =>
+          `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
+        const customer = await stripe.customers.retrieve(memberCustomerId)
+        const memberId =
+          !("deleted" in customer && customer.deleted) ? (customer.metadata?.member_id ?? null) : null
+
+        const subs = await stripe.subscriptions.list({ customer: memberCustomerId, status: "all", limit: 1 })
+        const sub = subs.data[0] ?? null
+        const price = sub?.items.data[0]?.price ?? null
+        const renewalTs = sub?.items.data[0]?.current_period_end ?? null
+
+        const savedCents = await sumMembershipSavings(stripe, memberCustomerId)
+
+        return {
+          loggedIn: true as const,
+          // The real "Saved with membership" total, mirroring the portal.
+          savedToDate: usd(savedCents),
+          // Linen Lovers number, e.g. "LL-123". Null if not on the account.
+          linenLoversNumber: memberId,
+          membershipStatus: sub?.status ?? "none",
+          // Next renewal: when the subscription bills again. Cancelled members
+          // won't renew, so flag that explicitly.
+          willRenew: sub ? !sub.cancel_at_period_end && sub.status === "active" : false,
+          nextRenewalDate: renewalTs
+            ? new Date(renewalTs * 1000).toLocaleDateString("en-AU", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })
+            : null,
+          planPrice: price?.unit_amount != null ? usd(price.unit_amount) : null,
+          planInterval: price?.recurring?.interval ?? null,
+        }
+      } catch (error) {
+        console.log("[v0] getMembershipDetails error:", error instanceof Error ? error.message : error)
+        return { loggedIn: true as const, note: "Couldn't load your membership details right now." }
+      }
+    },
+  })
+
+  const memberContext = memberCustomerId
+    ? "SHOPPER CONTEXT: This shopper is a SIGNED-IN Linen Lovers member. You can call getPurchaseHistory to personalise recommendations from their real order history, and getMembershipDetails to answer questions about their membership (savings to date, next renewal date, Linen Lovers number, status)."
+    : "SHOPPER CONTEXT: This shopper is NOT signed in, so no purchase history or membership details are available. Invite them to sign in to their Linen Lovers account for personalised picks and membership info if they ask."
+
+  const result = streamText({
+    model: "openai/gpt-5.5",
+    system: `${SYSTEM_PROMPT}\n\n${memberContext}`,
+    messages: await convertToModelMessages(messages),
+    tools: {
+      searchCatalog: searchCatalogTool,
+      getPurchaseHistory: getPurchaseHistoryTool,
+      getMembershipDetails: getMembershipDetailsTool,
+    },
+    // Allow several steps so the agent can run multiple searches (e.g. a
+    // cushion + a coordinating throw) and then respond in one turn.
+    stopWhen: stepCountIs(8),
+    providerOptions: {
+      // Light reasoning keeps replies snappy while still letting gpt-5.5 plan
+      // multi-search curation and budget logic.
+      openai: { reasoningEffort: "low" },
+    },
+  })
+
+  return result.toUIMessageStreamResponse()
+}
