@@ -4,10 +4,9 @@ import inventory from "@/lib/aster-hem-inventory.json"
 
 export const maxDuration = 30
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-
 export async function POST(req: Request) {
   try {
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
     const formData = await req.formData()
     const image = formData.get("image") as File
     if (!image) {
