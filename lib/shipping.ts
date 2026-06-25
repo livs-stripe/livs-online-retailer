@@ -1,4 +1,4 @@
-// Aster & Hem-style delivery & loyalty pricing rules (modelled on adairs.com.au)
+// Aster & Hem delivery & loyalty pricing rules.
 //
 // - Standard delivery is a flat fee, free above a spend threshold.
 // - Edit Club members get a lower free-shipping threshold.
@@ -39,7 +39,7 @@ export interface PromoCode {
 export const PROMO_CODES: Record<string, PromoCode> = {
   WELCOME10: { code: "WELCOME10", label: "10% off your order", type: "percent", value: 10 },
   STYLE15: { code: "STYLE15", label: "15% off styling picks", type: "percent", value: 15 },
-  ADAIRS20: { code: "ADAIRS20", label: "$20 off", type: "amount", value: 20 },
+  ASTER20: { code: "ASTER20", label: "$20 off", type: "amount", value: 20 },
 }
 
 export function lookupPromo(code: string): PromoCode | null {

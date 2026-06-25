@@ -11,7 +11,7 @@ import {
 } from "@/lib/membership"
 import type { CartItem } from "@/lib/types"
 
-const AGENT = "adairs_ai_stylist"
+const AGENT = "aster_hem_stylist"
 
 interface PaymentIntentBody {
   cartItems?: CartItem[]

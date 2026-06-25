@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { ADAIRS_PRODUCTS, type AsterHemProduct } from "@/lib/products"
+import { PRODUCTS, type AsterHemProduct } from "@/lib/products"
 import { externalImageUrl } from "@/lib/image-url"
 
 // =============================================================================
@@ -83,7 +83,7 @@ export function toAcpProduct(p: AsterHemProduct): AcpProduct {
 }
 
 // Total catalogue size, computed (never hardcoded).
-export const TOTAL_PRODUCTS = ADAIRS_PRODUCTS.length
+export const TOTAL_PRODUCTS = PRODUCTS.length
 
 // The public base URL used in the OpenAPI server block. Falls back to the
 // Vercel-provided production/deployment URL so the spec never ships a dead

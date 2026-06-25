@@ -20,7 +20,7 @@ export const DEFAULT_CHECKOUT_MODE: CheckoutMode = "elements"
 // the new Elements default below and keep surfacing embedded Checkout's
 // "Pay with Link" button (the one that opens a new tab inside the preview
 // iframe). Bumping the key lets the inline-Link Elements flow take effect.
-export const LS_CHECKOUT_MODE = "adairs_checkout_mode_v2"
+export const LS_CHECKOUT_MODE = "ah_checkout_mode_v2"
 
 // The Aster & Hem gift card is NOT a Stripe payment method. It is validated server
 // side and redeemed by creating a one-off Stripe coupon (Coupons API) for the

@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import { Sparkles, ArrowRight, Camera, Wand2, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -7,7 +8,7 @@ import { SiteChrome } from "./site-chrome"
 import { ProductImage } from "./product-image"
 import { StylistChatWidget } from "./stylist-chat-widget"
 import { useCart } from "./cart-context"
-import { ADAIRS_PRODUCTS, isOnSale } from "@/lib/products"
+import { PRODUCTS, isOnSale } from "@/lib/products"
 import type { ShopDestination, MenuKey } from "@/lib/categories"
 import { formatAud } from "@/lib/format"
 
@@ -86,7 +87,8 @@ export function MockHome({
   onEditClub: () => void
 }) {
   const { addToCart } = useCart()
-  const featured = ADAIRS_PRODUCTS.filter((p) => p.featured).slice(0, 4)
+  const [chatOpen, setChatOpen] = useState(false)
+  const featured = PRODUCTS.filter((p) => p.featured).slice(0, 4)
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -94,6 +96,7 @@ export function MockHome({
         onNavigate={onNavigate}
         onEditClub={onEditClub}
         onSearch={(q) => onShop({ type: "search", query: q })}
+        onLaunchStylist={() => setChatOpen(true)}
       />
 
       <main className="flex-1">
@@ -112,20 +115,18 @@ export function MockHome({
             <div className="absolute inset-0 flex items-center">
               <div className="mx-auto flex w-full max-w-6xl px-4 sm:px-6">
                 <div className="max-w-md text-background">
-                  <span className="inline-block rounded-full bg-blush px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blush-foreground">
-                    The Autumn Edit
-                  </span>
-                  <h1 className="mt-4 text-balance font-serif text-5xl leading-none sm:text-6xl">
-                    Considered wardrobe, effortlessly worn
+                  <h1 className="text-balance font-serif text-5xl leading-none sm:text-6xl">
+                    Your wardrobe, elevated.
                   </h1>
                   <p className="mt-4 text-pretty text-sm leading-relaxed text-background/90">
-                    Elevated basics and polished tailoring, designed in Australia to be worn season after season.
+                    Contemporary womenswear for the way you actually live.
                   </p>
                   <Button
-                    onClick={() => onNavigate("New In")}
+                    onClick={() => setChatOpen(true)}
                     className="mt-6 rounded-full bg-background px-6 text-foreground hover:bg-background/90"
                   >
-                    Shop new in
+                    <Sparkles className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                    Meet Hem, your AI stylist
                     <ArrowRight className="ml-1.5 h-4 w-4" aria-hidden="true" />
                   </Button>
                 </div>
@@ -300,17 +301,20 @@ export function MockHome({
             ))}
           </div>
 
-          <div className="mt-12 border-t border-border pt-8">
+          <div className="mt-12 border-t border-border pt-8 flex flex-col gap-2">
             <p className="text-pretty text-xs leading-relaxed text-muted-foreground">
-              {"\u00A9"} Aster &amp; Hem {new Date().getFullYear()} - Contemporary Australian womenswear. Elevated basics
+              {"\u00A9"} Aster &amp; Hem {new Date().getFullYear()} — Contemporary Australian womenswear. Elevated basics
               and polished tailoring, designed to be worn season after season.
+            </p>
+            <p className="text-[11px] text-muted-foreground/70">
+              Aster &amp; Hem is a fictitious brand created for demonstration purposes only.
             </p>
           </div>
         </div>
       </footer>
 
       {/* Floating conversational shopping agent */}
-      <StylistChatWidget />
+      <StylistChatWidget externalOpen={chatOpen} />
     </div>
   )
 }

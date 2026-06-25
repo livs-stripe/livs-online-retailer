@@ -6,7 +6,7 @@ import { UploadCloud, ImageIcon, ArrowRight, X, Camera, Check } from "lucide-rea
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
-import { CameraCapture } from "@/components/adairs/camera-capture"
+import { CameraCapture } from "@/components/storefront/camera-capture"
 import { STYLE_OPTIONS, BUDGET_OPTIONS, type RoomKind } from "@/lib/style-curation"
 import { downscaleImageDataUrl } from "@/lib/image-utils"
 

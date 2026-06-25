@@ -79,7 +79,7 @@ export async function GET() {
                         price_display: "$289.00",
                         category: "Bed Linen",
                         availability: "in_stock",
-                        image_url: "https://your-app.vercel.app/api/image-proxy?url=https%3A%2F%2Fwww.adairs.com.au%2F...jpg",
+                        image_url: "https://your-app.vercel.app/api/image-proxy?url=https%3A%2F%2Fwww.asterhem.com.au%2F...jpg",
                       },
                     ],
                     pagination: {

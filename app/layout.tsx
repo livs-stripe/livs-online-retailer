@@ -1,18 +1,18 @@
 import type { Metadata } from "next"
-import { Jost, Cormorant_Garamond } from "next/font/google"
+import { Inter, Playfair_Display } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
 
-const jostSans = Jost({
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans-custom",
   display: "swap",
 })
 
-const cormorantDisplay = Cormorant_Garamond({
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-display-custom",
   display: "swap",
 })
@@ -30,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`bg-background ${jostSans.variable} ${cormorantDisplay.variable}`}>
+    <html lang="en" className={`bg-background ${inter.variable} ${playfair.variable}`}>
       <body className="font-sans antialiased">
         {children}
         <Toaster />

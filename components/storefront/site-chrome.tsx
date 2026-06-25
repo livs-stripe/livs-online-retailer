@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { MapPin, User, ShoppingBag, Search, Menu } from "lucide-react"
+import { MapPin, User, ShoppingBag, Search, Menu, MessageCircle } from "lucide-react"
 import { toast } from "sonner"
 import { useCart } from "./cart-context"
 import { NAV_MENU, type MenuKey } from "@/lib/categories"
@@ -12,12 +12,11 @@ interface SiteChromeProps {
   onHome?: () => void
   onEditClub?: () => void
   onSearch?: (query: string) => void
-  // The page the shopper is currently on, so its nav link can be marked active.
-  // "linen" highlights the The Edit Club entry.
+  onLaunchStylist?: () => void
   activeMenu?: MenuKey | "linen"
 }
 
-export function SiteChrome({ onNavigate, onHome, onEditClub, onSearch, activeMenu }: SiteChromeProps) {
+export function SiteChrome({ onNavigate, onHome, onEditClub, onSearch, onLaunchStylist, activeMenu }: SiteChromeProps) {
   const router = useRouter()
   const { itemCount, openCheckout } = useCart()
   const [query, setQuery] = useState("")
@@ -68,13 +67,14 @@ export function SiteChrome({ onNavigate, onHome, onEditClub, onSearch, activeMen
             <button
               type="button"
               onClick={onHome}
-              className="flex items-center"
+              className="flex flex-col items-start"
               aria-label="Aster & Hem home"
               disabled={!onHome}
             >
               <span className="font-serif text-[1.75rem] font-medium leading-none tracking-tight text-foreground">
                 Aster &amp; Hem
               </span>
+              <span className="mt-1 block h-px w-full bg-border" aria-hidden="true" />
             </button>
           </div>
 
@@ -99,6 +99,15 @@ export function SiteChrome({ onNavigate, onHome, onEditClub, onSearch, activeMen
           </form>
 
           <nav className="flex items-center gap-4 text-foreground" aria-label="Account">
+            <button
+              type="button"
+              onClick={onLaunchStylist}
+              className="hidden cursor-pointer items-center gap-1.5 rounded-full border border-accent bg-accent/5 px-3 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/10 sm:inline-flex"
+              aria-label="Meet Hem, your AI stylist"
+            >
+              <MessageCircle className="h-4 w-4" aria-hidden="true" />
+              Meet Hem
+            </button>
             <button
               type="button"
               onClick={showStoreFinder}

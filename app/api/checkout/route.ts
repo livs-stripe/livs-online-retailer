@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
           product_data: {
             name: product.name,
             images: product.image.startsWith("http") ? [product.image] : undefined,
-            metadata: { adairs_sku: product.id, category: product.category },
+            metadata: { ah_sku: product.id, category: product.category },
           },
           unit_amount: Math.round(product.price * 100),
         },
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
         product_data: {
           name: MEMBERSHIP_LABEL,
           images: undefined,
-          metadata: { adairs_sku: "linen-lovers-membership", category: "Membership" },
+          metadata: { ah_sku: "linen-lovers-membership", category: "Membership" },
         },
         unit_amount: Math.round(membershipFee * 100),
       },
@@ -223,14 +223,14 @@ export async function POST(req: NextRequest) {
         : {}),
       discounts: couponId ? [{ coupon: couponId }] : undefined,
       metadata: {
-        demo: "adairs_acs_demo",
+        demo: "aster_hem_acs_demo",
         powered_by: "stripe_agentic_commerce_suite",
-        adairs_shipping: shippingLabel,
-        adairs_discount: discountLabel,
+        ah_shipping: shippingLabel,
+        ah_discount: discountLabel,
         ...(giftCardValue > 0
           ? {
-              adairs_gift_card_coupon: giftCardCouponId ?? "",
-              adairs_gift_card_amount: String(Math.round(giftCardValue * 100)),
+              ah_gift_card_coupon: giftCardCouponId ?? "",
+              ah_gift_card_amount: String(Math.round(giftCardValue * 100)),
             }
           : {}),
         ...piMetadata,

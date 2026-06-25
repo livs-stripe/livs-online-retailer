@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateText, Output } from "ai"
 import { z } from "zod"
-import { ADAIRS_PRODUCTS } from "@/lib/products"
+import { PRODUCTS } from "@/lib/products"
 import { curateAnalysis, detectStyleKey, type RoomKind } from "@/lib/style-curation"
 import type { RoomAnalysis } from "@/lib/types"
 
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
 
   // Give the model the full catalogue with subcategory + colour + price so it can
   // coordinate a complete head-to-toe outfit.
-  const catalog = ADAIRS_PRODUCTS.map(
+  const catalog = PRODUCTS.map(
     (p) => `${p.id} | ${p.name} | ${p.category} / ${p.subcategory} | ${p.colour} | $${p.price}`,
   ).join("\n")
 
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
   const suggested = curateAnalysis(stylePrompt, occasion, budget)
   const suggestedLine = suggested.recommendedProductIds
     .map((id) => {
-      const p = ADAIRS_PRODUCTS.find((x) => x.id === id)
+      const p = PRODUCTS.find((x) => x.id === id)
       return p ? `${p.id} (${p.name})` : id
     })
     .join(", ")
@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
       ],
     })
 
-    const validIds = new Set(ADAIRS_PRODUCTS.map((p) => p.id))
+    const validIds = new Set(PRODUCTS.map((p) => p.id))
     let recommendedProductIds = [...new Set(output.recommendedProductIds)]
       .filter((id) => validIds.has(id))
       .slice(0, CURATED_COUNT)
@@ -171,7 +171,7 @@ export async function POST(req: NextRequest) {
     // budget-fitted curation so the look the buyer authorizes can't exceed it.
     if (budget !== undefined) {
       const total = recommendedProductIds.reduce(
-        (sum, id) => sum + (ADAIRS_PRODUCTS.find((p) => p.id === id)?.price ?? 0),
+        (sum, id) => sum + (PRODUCTS.find((p) => p.id === id)?.price ?? 0),
         0,
       )
       if (total > budget) recommendedProductIds = suggested.recommendedProductIds

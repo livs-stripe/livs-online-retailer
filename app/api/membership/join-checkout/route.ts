@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
         test_clock: clock.id,
         metadata: {
           membership: "linen_lovers",
-          source: "adairs_demo",
+          source: "aster_hem_demo",
           [SIMULATION_METADATA_KEY]: SIMULATION_METADATA_VALUE,
         },
       })
@@ -99,12 +99,12 @@ export async function POST(req: NextRequest) {
         description: hasPhysicalGoods
           ? "The Edit Club 2-Year Membership — $19.95. Other items in this order are billed on a separate invoice."
           : "The Edit Club 2-Year Membership — $19.95.",
-        metadata: { membership: "linen_lovers", source: "adairs_demo" },
+        metadata: { membership: "linen_lovers", source: "aster_hem_demo" },
       },
       metadata: {
         membership: "linen_lovers",
-        source: "adairs_demo",
-        demo: "adairs_acs_demo",
+        source: "aster_hem_demo",
+        demo: "aster_hem_acs_demo",
         powered_by: "stripe_agentic_commerce_suite",
         // Products are billed on a separate invoice after completion so the
         // subscription invoice stays membership-only. The completion handler

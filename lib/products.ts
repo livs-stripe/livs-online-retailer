@@ -2,9 +2,7 @@
 // Contemporary Australian womenswear — elevated basics and polished workwear.
 // 100-item demo inventory. Product images live at /public/images/products/<SKU>.jpg
 //
-// NOTE: The export is still named ADAIRS_PRODUCTS / AsterHemProduct for backwards
-// compatibility with the many modules that import it. The data is now the
-// Aster & Hem catalogue.
+// Aster & Hem catalogue — 100 items across Workwear, Weekend, Evening, Accessories.
 
 import inventory from "./aster-hem-inventory.json"
 
@@ -56,7 +54,7 @@ const FEATURED_SKUS = new Set<string>([
   "AH-085",
 ])
 
-export const ADAIRS_PRODUCTS: AsterHemProduct[] = (inventory as InventoryItem[]).map((item) => ({
+export const PRODUCTS: AsterHemProduct[] = (inventory as InventoryItem[]).map((item) => ({
   id: item.sku,
   sku: item.sku,
   name: item.name,
@@ -75,7 +73,7 @@ export const ADAIRS_PRODUCTS: AsterHemProduct[] = (inventory as InventoryItem[])
 // Convenience lookup by SKU/id — used by the stylist agent's vision feature and
 // in-chat product cards.
 export const PRODUCTS_BY_SKU: Record<string, AsterHemProduct> = Object.fromEntries(
-  ADAIRS_PRODUCTS.map((p) => [p.id, p]),
+  PRODUCTS.map((p) => [p.id, p]),
 )
 
 export function getProductBySku(sku: string): AsterHemProduct | undefined {
@@ -88,19 +86,19 @@ export function getProductById(id: string): AsterHemProduct | undefined {
 }
 
 // All unique top-level categories (Workwear, Weekend, Evening, Accessories).
-export const getCategories = (): string[] => [...new Set(ADAIRS_PRODUCTS.map((p) => p.category))]
+export const getCategories = (): string[] => [...new Set(PRODUCTS.map((p) => p.category))]
 
 // Filter by category.
 export const getByCategory = (cat: string): AsterHemProduct[] =>
-  ADAIRS_PRODUCTS.filter((p) => p.category === cat)
+  PRODUCTS.filter((p) => p.category === cat)
 
 // Featured / "new in" hero pieces.
-export const getFeatured = (): AsterHemProduct[] => ADAIRS_PRODUCTS.filter((p) => p.featured)
+export const getFeatured = (): AsterHemProduct[] => PRODUCTS.filter((p) => p.featured)
 
 // Search by name, colour or category.
 export const searchProducts = (q: string): AsterHemProduct[] => {
   const term = q.toLowerCase()
-  return ADAIRS_PRODUCTS.filter(
+  return PRODUCTS.filter(
     (p) =>
       p.name.toLowerCase().includes(term) ||
       p.colour.toLowerCase().includes(term) ||

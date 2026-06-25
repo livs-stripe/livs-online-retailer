@@ -1,18 +1,17 @@
 // Shared helpers for product image URLs.
 //
-// Aster & Hem's product CDN (www.adairs.com.au / Scene7) uses hotlink protection, so
-// images requested directly from the browser can fail. We route them through a
-// same-origin proxy (/api/image-proxy) that adds the right Referer/User-Agent
-// server-side. These helpers normalise raw URLs and build the proxy URL, and
-// are shared by the ACP feed, the ProductImage component, and the debug route.
+// External product CDN images use hotlink protection, so images requested
+// directly from the browser can fail. We route them through a same-origin proxy
+// (/api/image-proxy) that adds the right Referer/User-Agent server-side.
+// These helpers normalise raw URLs and build the proxy URL.
 
 // Hostnames we allow the proxy to fetch from. Anything else is rejected so the
 // proxy can't be used as an open relay.
 export const ALLOWED_IMAGE_HOSTS = [
-  "adairs.com.au",
-  "www.adairs.com.au",
-  "cdn.adairs.com.au",
-  "images.adairs.com.au",
+  "asterhem.com.au",
+  "www.asterhem.com.au",
+  "cdn.asterhem.com.au",
+  "images.asterhem.com.au",
 ] as const
 
 // Returns true for an allowed host, including any *.scene7.com subdomain.
@@ -32,7 +31,7 @@ export function cleanImageUrl(raw: string | null | undefined): string | null {
   const value = raw.trim()
   if (value === "") return null
   if (value.startsWith("//")) return `https:${value}`
-  if (value.startsWith("/")) return `https://www.adairs.com.au${value}`
+  if (value.startsWith("/")) return `https://www.asterhem.com.au${value}`
   return value
 }
 
@@ -40,9 +39,7 @@ export function cleanImageUrl(raw: string | null | undefined): string | null {
 // callers can render a placeholder instead.
 //
 // Images route through our own /api/image-proxy, which caches each image into
-// Vercel Blob and redirects to the Blob CDN copy. This is reliable in
-// production (Aster & Hem blocks Vercel's datacenter IPs, so a direct fetch 502s;
-// the proxy populates the cache via wsrv.nl, which IS reachable). See
+// Vercel Blob and redirects to the Blob CDN copy. See
 // app/api/image-proxy/route.ts for the full rationale.
 export function proxiedImageUrl(raw: string | null | undefined): string | null {
   if (!raw) return null
@@ -63,7 +60,7 @@ export function proxiedImageUrl(raw: string | null | undefined): string | null {
 // GPT, which embeds image URLs verbatim in its replies and fetches them with no
 // headers.
 //
-// We use wsrv.nl, a free public image CDN. It fetches the Aster & Hem origin
+// We use wsrv.nl, a free public image CDN. It fetches the origin
 // server-side (from allowed IPs) and serves the result from its own domain, so:
 //   - it is NOT behind this project's Vercel Deployment Protection, so the
 //     image loads even while the site itself requires Vercel authentication;

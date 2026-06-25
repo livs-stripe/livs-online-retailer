@@ -49,7 +49,7 @@ export async function POST(req: Request) {
       currency: "usd",
       duration: "once",
       name: `Aster & Hem Gift Card ****${last4}`,
-      metadata: { kind: "adairs_gift_card", last4 },
+      metadata: { kind: "ah_gift_card", last4 },
     })
 
     return NextResponse.json({ ok: true, couponId: coupon.id, balance, last4 })

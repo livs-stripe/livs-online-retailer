@@ -19,7 +19,7 @@ export const LS_SUBSCRIPTION_ID = "ll_subscription_id"
 // stylist checkout). The My Edit Club page listens for it and re-fetches so
 // "Recent purchases", billing history, and member savings reflect the new order
 // without a manual reload.
-export const ORDER_PLACED_EVENT = "adairs:order-placed"
+export const ORDER_PLACED_EVENT = "ah:order-placed"
 
 /** Notify any open My Edit Club view that a new order was just placed. */
 export function notifyOrderPlaced() {
@@ -61,8 +61,8 @@ export const SAVINGS_LABEL_METADATA_KEY = "linen_lovers_savings_label"
 // Metadata keys recording the product-level contents of an order on its
 // PaymentIntent (set at checkout). These let the AI Stylist read a member's real
 // purchase history back at the product level to recommend complementary pieces.
-export const ITEMS_METADATA_KEY = "adairs_items" // pipe-separated item names
-export const CATEGORIES_METADATA_KEY = "adairs_categories" // comma-separated categories
+export const ITEMS_METADATA_KEY = "ah_items" // pipe-separated item names
+export const CATEGORIES_METADATA_KEY = "ah_categories" // comma-separated categories
 
 export type MembershipStatusTone = "active" | "expiring" | "cancelled"
 

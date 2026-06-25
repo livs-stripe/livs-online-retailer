@@ -6,10 +6,10 @@
 // optional filters (category, price range) to a small set of genuinely relevant
 // products the agent can recommend and the buyer can purchase in-chat.
 
-import { ADAIRS_PRODUCTS, type AsterHemProduct } from "@/lib/products"
+import { PRODUCTS, type AsterHemProduct } from "@/lib/products"
 
 // The canonical categories in the catalogue (kept in sync via fuzzy matching).
-const CATEGORIES = Array.from(new Set(ADAIRS_PRODUCTS.map((p) => p.category)))
+const CATEGORIES = Array.from(new Set(PRODUCTS.map((p) => p.category)))
 
 // Expand common fashion-style words into the concrete colour/fabric/garment
 // vocabulary that actually appears in product names and descriptions, so a query
@@ -147,7 +147,7 @@ export function searchCatalog(params: CatalogSearchParams): CatalogSearchResult 
   const matchedCategory = resolveCategory(params.category)
   const tokens = buildTokens(params.query ?? "")
 
-  let pool = ADAIRS_PRODUCTS.filter((p) => {
+  let pool = PRODUCTS.filter((p) => {
     if (matchedCategory && p.category !== matchedCategory) return false
     if (params.maxPrice !== undefined && p.price > params.maxPrice) return false
     if (params.minPrice !== undefined && p.price < params.minPrice) return false
@@ -156,7 +156,7 @@ export function searchCatalog(params: CatalogSearchParams): CatalogSearchResult 
 
   // If a category filter wiped out everything (e.g. price too low), relax price.
   if (pool.length === 0 && matchedCategory) {
-    pool = ADAIRS_PRODUCTS.filter((p) => p.category === matchedCategory)
+    pool = PRODUCTS.filter((p) => p.category === matchedCategory)
   }
 
   const scored = pool.map((product) => {

@@ -12,7 +12,7 @@
 //     shared more freely across styles.
 // It is fully deterministic so the same brief always yields a coherent edit.
 
-import { ADAIRS_PRODUCTS, type AsterHemProduct } from "@/lib/products"
+import { PRODUCTS, type AsterHemProduct } from "@/lib/products"
 import type { RoomAnalysis } from "@/lib/types"
 
 export type StyleKey =
@@ -332,7 +332,7 @@ function pickFromSubcategories(
   used: Set<string>,
   maxPrice?: number,
 ): ScoredPick | undefined {
-  const candidates = ADAIRS_PRODUCTS.filter(
+  const candidates = PRODUCTS.filter(
     (p) =>
       subcategories.includes(p.subcategory ?? "") &&
       !used.has(p.id) &&
@@ -362,7 +362,7 @@ function pickFromSubcategories(
 // RESERVE a minimum spend for the slots we haven't filled yet, so a budget
 // isn't blown entirely on the hero piece.
 function minSlotPrice(slot: CurationSlot, used: Set<string>): number {
-  const cands = ADAIRS_PRODUCTS.filter(
+  const cands = PRODUCTS.filter(
     (p) => slot.subcategories.includes(p.subcategory ?? "") && !used.has(p.id),
   )
   if (cands.length === 0) return 0

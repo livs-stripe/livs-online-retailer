@@ -1,10 +1,10 @@
-import { ADAIRS_PRODUCTS } from "./products"
+import { PRODUCTS } from "./products"
 import type { Product } from "./types"
 
 // Aster & Hem — contemporary Australian womenswear navigation.
 export type MenuKey = "New In" | "Workwear" | "Weekend" | "Evening" | "Accessories" | "Sale"
 
-export const NAV_MENU: MenuKey[] = ["New In", "Workwear", "Weekend", "Evening", "Accessories", "Sale"]
+export const NAV_MENU: MenuKey[] = ["Workwear", "Weekend", "Evening", "Accessories", "Sale"]
 
 // Each top-level nav menu maps to one or more underlying product categories.
 const CATEGORY_GROUPS: Partial<Record<MenuKey, string[]>> = {
@@ -37,12 +37,12 @@ export interface ShopView {
 function getProductsForMenu(key: MenuKey): Product[] {
   switch (key) {
     case "New In":
-      return ADAIRS_PRODUCTS.filter((p) => p.featured)
+      return PRODUCTS.filter((p) => p.featured)
     case "Sale":
-      return ADAIRS_PRODUCTS
+      return PRODUCTS
     default: {
       const groups = CATEGORY_GROUPS[key] ?? []
-      return ADAIRS_PRODUCTS.filter((p) => groups.includes(p.category))
+      return PRODUCTS.filter((p) => groups.includes(p.category))
     }
   }
 }
@@ -97,7 +97,7 @@ export function resolveShop(dest: ShopDestination): ShopView {
   if (dest.type === "search") {
     const q = dest.query.trim().toLowerCase()
     const products = q
-      ? ADAIRS_PRODUCTS.filter(
+      ? PRODUCTS.filter(
           (p) =>
             p.name.toLowerCase().includes(q) ||
             p.category.toLowerCase().includes(q) ||
@@ -116,6 +116,6 @@ export function resolveShop(dest: ShopDestination): ShopView {
   return {
     title: dest.title,
     description: dest.description ?? `Shop our ${dest.title.toLowerCase()} collection.`,
-    products: ADAIRS_PRODUCTS.filter((p) => p.category === dest.category),
+    products: PRODUCTS.filter((p) => p.category === dest.category),
   }
 }

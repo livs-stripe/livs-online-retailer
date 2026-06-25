@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import { CartProvider } from "@/components/adairs/cart-context"
+import { CartProvider } from "@/components/storefront/cart-context"
 import { MembershipContent } from "./membership-content"
 
 export const metadata = {

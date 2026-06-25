@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Truck, Sparkles, RotateCcw } from "lucide-react"
-import { Header } from "@/components/adairs/header"
+import { Header } from "@/components/storefront/header"
 import { Button } from "@/components/ui/button"
 import { getStripe } from "@/lib/stripe"
 

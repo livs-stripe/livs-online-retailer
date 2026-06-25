@@ -181,7 +181,7 @@ async function chargeGoodsInvoice(
       description:
         "Aster & Hem order — items purchased with your Edit Club sign-up (billed separately from the $19.95 membership).",
       metadata: {
-        source: "adairs_demo",
+        source: "aster_hem_demo",
         kind: "linen_lovers_goods",
         checkout_session: session.id,
       },

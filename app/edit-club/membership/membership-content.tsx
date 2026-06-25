@@ -23,10 +23,10 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { SiteChrome } from "@/components/adairs/site-chrome"
-import { useCart } from "@/components/adairs/cart-context"
-import { MembershipManageCard } from "@/components/adairs/membership-manage-card"
-import { StylistChatWidget } from "@/components/adairs/stylist-chat-widget"
+import { SiteChrome } from "@/components/storefront/site-chrome"
+import { useCart } from "@/components/storefront/cart-context"
+import { MembershipManageCard } from "@/components/storefront/membership-manage-card"
+import { StylistChatWidget } from "@/components/storefront/stylist-chat-widget"
 import {
   LS_CUSTOMER_ID,
   LS_SUBSCRIPTION_ID,

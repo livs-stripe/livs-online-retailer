@@ -99,11 +99,11 @@ export async function POST(req: NextRequest) {
 
   const memberSavingsCents = Math.round(memberDiscountAmount * 100)
   const metadata: Record<string, string> = {
-    demo: "adairs_acs_demo",
+    demo: "aster_hem_acs_demo",
     flow: "storefront_elements_checkout",
     powered_by: "stripe_payment_element",
-    adairs_shipping: (body.shippingLabel ?? "Standard Delivery").slice(0, 200),
-    adairs_discount: (body.discountLabel ?? "Discount").slice(0, 200),
+    ah_shipping: (body.shippingLabel ?? "Standard Delivery").slice(0, 200),
+    ah_discount: (body.discountLabel ?? "Discount").slice(0, 200),
   }
   // Record the product-level order contents so a member's purchase history can
   // later be read back per-item (e.g. by the AI Stylist for recommendations).
@@ -115,8 +115,8 @@ export async function POST(req: NextRequest) {
     metadata[SAVINGS_LABEL_METADATA_KEY] = "The Edit Club member discount"
   }
   if (giftCardApplied > 0) {
-    metadata.adairs_gift_card_coupon = String(giftCardCouponId)
-    metadata.adairs_gift_card_amount = String(Math.round(giftCardApplied * 100))
+    metadata.ah_gift_card_coupon = String(giftCardCouponId)
+    metadata.ah_gift_card_amount = String(Math.round(giftCardApplied * 100))
   }
 
   try {

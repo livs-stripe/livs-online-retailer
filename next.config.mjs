@@ -12,7 +12,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
     remotePatterns: [
-      { protocol: "https", hostname: "www.adairs.com.au", pathname: "/globalassets/**" },
+      { protocol: "https", hostname: "www.asterhem.com.au", pathname: "/globalassets/**" },
     ],
   },
 }

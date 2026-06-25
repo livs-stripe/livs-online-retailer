@@ -22,7 +22,7 @@ interface AgentCheckoutPanelProps {
 
 type Fulfillment = "delivery" | "pickup"
 
-const AGENT = "adairs_ai_stylist"
+const AGENT = "aster_hem_stylist"
 
 // In-chat checkout rendered INLINE inside the Stylist chat panel. The buyer pays
 // with real Stripe payment methods (Link, Apple/Google Pay or card) via the

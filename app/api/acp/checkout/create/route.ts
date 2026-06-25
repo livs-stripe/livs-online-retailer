@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
       metadata: {
         source: "acp_demo",
         agent: "chatgpt_custom_gpt",
-        seller: "adairs",
+        seller: "aster_hem",
         items: compactItems,
       },
     })

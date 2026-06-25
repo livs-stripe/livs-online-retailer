@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server"
-import { ADAIRS_PRODUCTS } from "@/lib/products"
+import { PRODUCTS } from "@/lib/products"
 import { TOTAL_PRODUCTS, jsonCors, preflight, toAcpProduct } from "@/lib/acp"
 
 // GET /api/acp/feed — paginated, searchable product feed for ChatGPT.
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   const ql = q.toLowerCase()
   const cl = category.toLowerCase()
 
-  let filtered = ADAIRS_PRODUCTS
+  let filtered = PRODUCTS
   if (q) {
     filtered = filtered.filter((p) => {
       const haystack = `${p.name} ${p.variant} ${p.category}`.toLowerCase()
