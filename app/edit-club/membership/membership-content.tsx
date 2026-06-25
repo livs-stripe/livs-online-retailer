@@ -106,7 +106,7 @@ export function MembershipContent() {
           if (res.ok && data.customerId) {
             localStorage.setItem(LS_CUSTOMER_ID, data.customerId)
             if (data.subscriptionId) localStorage.setItem(LS_SUBSCRIPTION_ID, data.subscriptionId)
-            window.history.replaceState(null, "", "/linen-lovers/membership")
+            window.history.replaceState(null, "", "/edit-club/membership")
             if (active) await load(data.customerId)
             return
           }
@@ -218,7 +218,7 @@ export function MembershipContent() {
       <SiteChrome
         onHome={() => router.push("/")}
         onNavigate={() => router.push("/")}
-        onLinenLovers={() => router.push("/?view=linen")}
+        onEditClub={() => router.push("/?view=editclub")}
         onSearch={() => router.push("/")}
       />
 
@@ -231,7 +231,7 @@ export function MembershipContent() {
               Rewards Membership
             </span>
             <h1 className="mt-3 font-serif text-3xl leading-tight text-linen-foreground sm:text-4xl">
-              My Linen Lovers
+              My Edit Club
             </h1>
           </div>
         </section>
@@ -249,7 +249,7 @@ export function MembershipContent() {
                     <Mail className="h-6 w-6" aria-hidden="true" />
                   </span>
                   <div>
-                    <h2 className="font-serif text-2xl text-foreground">Already a Linen Lover</h2>
+                    <h2 className="font-serif text-2xl text-foreground">Already an Edit Club member</h2>
                     <p className="mx-auto mt-2 max-w-xs text-pretty text-sm leading-relaxed text-muted-foreground">
                       Enter the email you joined with to view your membership and manage billing.
                     </p>
@@ -299,7 +299,7 @@ export function MembershipContent() {
                     <Sparkles className="h-6 w-6" aria-hidden="true" />
                   </span>
                   <div>
-                    <h2 className="font-serif text-2xl text-foreground">Not a Linen Lover yet</h2>
+                    <h2 className="font-serif text-2xl text-foreground">Not an Edit Club member yet</h2>
                     <p className="mx-auto mt-2 max-w-xs text-pretty text-sm leading-relaxed text-muted-foreground">
                       Join for {MEMBERSHIP_TERM_YEARS} years of members-only pricing, free-shipping perks and early
                       access to every sale.
@@ -310,11 +310,11 @@ export function MembershipContent() {
                       onClick={handleJoin}
                       className="w-full rounded-full bg-linen text-linen-foreground hover:bg-linen/90"
                     >
-                      Join Linen Lovers
+                      Join The Edit Club
                       <ArrowRight className="ml-1.5 h-4 w-4" aria-hidden="true" />
                     </Button>
                     <Button asChild variant="outline" className="w-full rounded-full">
-                      <Link href="/">Back to Adairs</Link>
+                      <Link href="/">Back to Aster & Hem</Link>
                     </Button>
                   </div>
                 </div>
@@ -428,7 +428,7 @@ function MemberDashboard({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="font-serif text-2xl text-foreground">
-            {customer.name ?? "Linen Lover"}
+            {customer.name ?? "Member"}
           </h2>
           {customer.email && <p className="text-sm text-muted-foreground">{customer.email}</p>}
           {customer.memberId && (
@@ -450,7 +450,7 @@ function MemberDashboard({
           icon={PiggyBank}
           label="Saved with membership"
           value={formatMoney(savedToDate, currency)}
-          hint="Linen Lovers discount on your purchases"
+          hint="The Edit Club discount on your purchases"
         />
         <StatCard
           icon={CalendarClock}

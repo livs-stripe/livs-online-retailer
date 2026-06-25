@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select"
 import { SiteChrome } from "./site-chrome"
 import { ProductImage } from "./product-image"
-import { LinenLoversTile } from "./linen-lovers-tile"
+import { EditClubTile } from "./edit-club-tile"
 import { StylistChatWidget } from "./stylist-chat-widget"
 import { useCart } from "./cart-context"
 import {
@@ -33,7 +33,7 @@ interface CategoryPageProps {
   destination: ShopDestination
   onHome: () => void
   onNavigate: (key: MenuKey) => void
-  onLinenLovers: () => void
+  onEditClub: () => void
   onShop: (dest: ShopDestination) => void
 }
 
@@ -41,7 +41,7 @@ export function CategoryPage({
   destination,
   onHome,
   onNavigate,
-  onLinenLovers,
+  onEditClub,
   onShop,
 }: CategoryPageProps) {
   const { addToCart } = useCart()
@@ -74,7 +74,7 @@ export function CategoryPage({
 
   const shown = filteredSorted.slice(0, visible)
 
-  // Interleave the Linen Lovers membership tile sporadically through the grid.
+  // Interleave the Edit Club membership tile sporadically through the grid.
   // We seed the first slot from the view's title so different categories (Throws,
   // Kids, etc.) surface it at slightly different positions, then repeat it every
   // ~11 products so it recurs without crowding the catalog.
@@ -96,7 +96,7 @@ export function CategoryPage({
       <SiteChrome
         onNavigate={onNavigate}
         onHome={onHome}
-        onLinenLovers={onLinenLovers}
+        onEditClub={onEditClub}
         onSearch={(q) => onShop({ type: "search", query: q })}
         activeMenu={destination.type === "menu" ? destination.key : undefined}
       />
@@ -192,7 +192,7 @@ export function CategoryPage({
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
               {gridItems.map((item) => {
                 if (item.kind === "promo") {
-                  return <LinenLoversTile key={item.key} onLinenLovers={onLinenLovers} />
+                  return <EditClubTile key={item.key} onEditClub={onEditClub} />
                 }
                 const product = item.product
                 return (

@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getStripe } from "@/lib/stripe"
 
-// Cancels (or resumes) a Linen Lovers membership via pure API — no Stripe-hosted
+// Cancels (or resumes) a Edit Club membership via pure API — no Stripe-hosted
 // UI. We set `cancel_at_period_end: true` so the member keeps access until the
 // end of the term they already paid for and simply stops auto-renewing. We never
 // issue a refund: subscriptions are non-refundable, this only stops renewal.

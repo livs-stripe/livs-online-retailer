@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     // must NOT show here — those belong in "Recent purchases", not billing.
     const invoiceList = await stripe.invoices.list({ customer: customerId, limit: 100 })
 
-    // Billing history = the Linen Lovers MEMBERSHIP only. An invoice is a
+    // Billing history = the The Edit Club MEMBERSHIP only. An invoice is a
     // membership/billing invoice when it was raised by the subscription (its
     // billing_reason starts with "subscription"), e.g. subscription_create or
     // subscription_cycle. Product orders (manual goods invoices, standalone
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
     // "Paid to date" reflects membership fees only, matching the billing section.
     const paidInvoices = membershipInvoices.filter((i) => i.status === "paid")
     const amountPaidToDate = paidInvoices.reduce((sum, i) => sum + i.amount_paid, 0)
-    // "Saved with membership" is the real Linen Lovers discount captured on the
+    // "Saved with membership" is the real The Edit Club discount captured on the
     // member's purchases (in cents), not an estimate.
     const savedToDate = await sumMembershipSavings(stripe, customerId)
 
@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
         id: customer.id,
         name: customer.name ?? null,
         email: customer.email ?? null,
-        // The Linen Lovers number lives in customer metadata (e.g. "LL-123").
+        // The Edit Club number lives in customer metadata (e.g. "LL-123").
         memberId: customer.metadata?.member_id ?? null,
       },
       subscription: sub

@@ -94,7 +94,7 @@ export function GiftCardField({ applied, onApplied, onRemove, disabled }: GiftCa
     <div className="rounded-2xl border border-border bg-card p-4">
       <p className="mb-1 flex items-center gap-2 text-sm font-medium text-foreground">
         <Gift className="h-4 w-4 text-accent" aria-hidden="true" />
-        Adairs Gift Card
+        Aster & Hem Gift Card
       </p>
       <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
         Redeem your gift card balance against this order. The remaining balance is charged to your card.

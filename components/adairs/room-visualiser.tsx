@@ -22,10 +22,10 @@ interface RoomVisualiserProps {
 
 // Status messages shown as the progress bar fills
 const PROGRESS_STAGES = [
-  "Analysing your room…",
-  "Mapping the layout & lighting…",
-  "Placing your selected pieces…",
-  "Matching colours & textures…",
+  "Reading your photo…",
+  "Mapping your pose & proportions…",
+  "Dressing you in the look…",
+  "Matching colours & fabrics…",
   "Adding finishing touches…",
 ]
 
@@ -176,7 +176,7 @@ export function RoomVisualiser({
       <div
         ref={containerRef}
         className={cn(
-          "relative aspect-[4/3] w-full select-none overflow-hidden bg-secondary",
+          "relative aspect-[3/4] w-full select-none overflow-hidden bg-secondary",
           hasResult && !loading && "cursor-ew-resize touch-none",
         )}
         onPointerDown={onPointerDown}
@@ -188,7 +188,7 @@ export function RoomVisualiser({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={styledImage || "/placeholder.svg"}
-            alt="Your room styled with Adairs pieces"
+            alt="You styled in the Aster & Hem look"
             className="absolute inset-0 h-full w-full object-cover"
           />
         )}
@@ -200,7 +200,7 @@ export function RoomVisualiser({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageDataUrl || "/placeholder.svg"}
-            alt="Your room before styling"
+            alt="Your photo before styling"
             className="absolute inset-0 h-full w-full object-cover"
           />
         </div>
@@ -268,12 +268,12 @@ export function RoomVisualiser({
       <div className="flex items-center justify-between gap-3 p-4">
         <p className="text-xs text-muted-foreground">
           {loading
-            ? "Placing your pieces into your photo…"
+            ? "Styling the look onto your photo…"
             : hasResult
               ? `Drag the slider to compare — styled with ${placedCount} ${
                   placedCount === 1 ? "piece" : "pieces"
                 } below.`
-              : "Add a few pieces to preview them in your space."}
+              : "Add a few pieces to see them styled on you."}
         </p>
         {hasResult && (
           <button

@@ -1,6 +1,6 @@
 // Shared helpers for product image URLs.
 //
-// Adairs' product CDN (www.adairs.com.au / Scene7) uses hotlink protection, so
+// Aster & Hem's product CDN (www.adairs.com.au / Scene7) uses hotlink protection, so
 // images requested directly from the browser can fail. We route them through a
 // same-origin proxy (/api/image-proxy) that adds the right Referer/User-Agent
 // server-side. These helpers normalise raw URLs and build the proxy URL, and
@@ -25,7 +25,7 @@ export function isAllowedImageHost(hostname: string): boolean {
 // Normalise a raw image value from the product catalogue into an absolute URL.
 // - null / undefined / empty  -> null (frontend shows a placeholder)
 // - protocol-relative "//..." -> prefixed with https:
-// - relative "/path"          -> prefixed with the Adairs origin
+// - relative "/path"          -> prefixed with the Aster & Hem origin
 // - already absolute          -> returned as-is
 export function cleanImageUrl(raw: string | null | undefined): string | null {
   if (!raw) return null
@@ -41,7 +41,7 @@ export function cleanImageUrl(raw: string | null | undefined): string | null {
 //
 // Images route through our own /api/image-proxy, which caches each image into
 // Vercel Blob and redirects to the Blob CDN copy. This is reliable in
-// production (Adairs blocks Vercel's datacenter IPs, so a direct fetch 502s;
+// production (Aster & Hem blocks Vercel's datacenter IPs, so a direct fetch 502s;
 // the proxy populates the cache via wsrv.nl, which IS reachable). See
 // app/api/image-proxy/route.ts for the full rationale.
 export function proxiedImageUrl(raw: string | null | undefined): string | null {
@@ -63,7 +63,7 @@ export function proxiedImageUrl(raw: string | null | undefined): string | null {
 // GPT, which embeds image URLs verbatim in its replies and fetches them with no
 // headers.
 //
-// We use wsrv.nl, a free public image CDN. It fetches the Adairs origin
+// We use wsrv.nl, a free public image CDN. It fetches the Aster & Hem origin
 // server-side (from allowed IPs) and serves the result from its own domain, so:
 //   - it is NOT behind this project's Vercel Deployment Protection, so the
 //     image loads even while the site itself requires Vercel authentication;

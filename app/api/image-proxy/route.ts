@@ -4,7 +4,7 @@ import { isAllowedImageHost } from "@/lib/image-url"
 
 // Production-robust product image proxy.
 //
-// THE PROBLEM: Adairs' image CDN sits behind Cloudflare, which BLOCKS
+// THE PROBLEM: Aster & Hem's image CDN sits behind Cloudflare, which BLOCKS
 // server-to-server requests from Vercel's datacenter IP ranges. A direct
 // server-side fetch therefore works in the v0 dev sandbox (allowed IP) but
 // returns 502 in production. Loading wsrv.nl directly from the browser works,

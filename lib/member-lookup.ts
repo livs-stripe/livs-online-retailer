@@ -1,7 +1,7 @@
 import type Stripe from "stripe"
 import { MEMBER_ID_METADATA_KEY } from "./membership"
 
-// Server-only helpers for finding Linen Lovers member customers in Stripe.
+// Server-only helpers for finding Edit Club member customers in Stripe.
 //
 // THE TEST-CLOCK PROBLEM
 // ----------------------
@@ -64,7 +64,7 @@ async function findInTestClocks(
 }
 
 // Finds the member customer for an email, including test-clock customers. Prefers
-// a customer that already carries a Linen Lovers number; otherwise returns any
+// a customer that already carries a Edit Club number; otherwise returns any
 // customer with that email (so the caller can fall back to a subscription check).
 export async function findCustomerByEmail(
   stripe: Stripe,
@@ -123,7 +123,7 @@ export async function findCustomerByMemberId(
   return findInTestClocks(stripe, (c) => c.metadata?.[MEMBER_ID_METADATA_KEY] === canonicalId)
 }
 
-// Whether a customer has a currently-effective Linen Lovers subscription. Used as
+// Whether a customer has a currently-effective The Edit Club subscription. Used as
 // a fallback when the member id hasn't been stamped yet (just after payment).
 export async function hasActiveMembershipSubscription(
   stripe: Stripe,

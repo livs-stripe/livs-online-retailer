@@ -17,7 +17,7 @@ import { findCustomerByEmail, hasActiveMembershipSubscription } from "@/lib/memb
 // plain list/search here was the bug that let a known member buy a second
 // membership.
 //
-// "Is a member" means: a Stripe customer with this email carries a Linen Lovers
+// "Is a member" means: a Stripe customer with this email carries a The Edit Club
 // member number (member_id metadata) OR has an active/trialing/past_due
 // linen_lovers subscription (covers the brief window after payment but before
 // the completion handler stamps the member id).
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     // Test-clock-aware lookup across both normal and clock customers.
     const { withMemberId, anyMatch } = await findCustomerByEmail(stripe, email)
 
-    // Strongest signal: a customer already carrying a Linen Lovers number.
+    // Strongest signal: a customer already carrying a Edit Club number.
     if (withMemberId) {
       return NextResponse.json(memberResponse(withMemberId, email))
     }

@@ -33,7 +33,7 @@ export function AboutModal({ open, onOpenChange }: AboutModalProps) {
         <DialogHeader>
           <DialogTitle className="font-serif text-2xl">About this demo</DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            A bespoke Adairs experience showcasing Stripe&apos;s Agentic Commerce Suite.
+            A bespoke Aster & Hem experience showcasing Stripe&apos;s Agentic Commerce Suite.
           </DialogDescription>
         </DialogHeader>
 

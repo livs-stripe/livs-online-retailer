@@ -271,7 +271,7 @@ export function MembershipManageCard({
               <AlertDialogHeader>
                 <AlertDialogTitle>Stop auto-renew?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Your Linen Lovers membership will stay active
+                  Your Edit Club membership will stay active
                   {currentPeriodEnd ? ` until ${formatDate(currentPeriodEnd)}` : " until the end of your current term"},
                   then it won&apos;t renew. You won&apos;t be charged again and this term is non-refundable. You can
                   resume any time before it ends.

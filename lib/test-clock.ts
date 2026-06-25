@@ -1,6 +1,6 @@
 import type Stripe from "stripe"
 
-// Stripe Test Clock helpers for the Linen Lovers demo.
+// Stripe Test Clock helpers for the The Edit Club demo.
 //
 // Test clocks let us simulate the passage of time for a real subscription so we
 // can show, e.g., "what the account looks like after 2 years" (the first

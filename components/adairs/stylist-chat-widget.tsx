@@ -27,7 +27,7 @@ function renderInlineMarkdown(text: string) {
   })
 }
 
-// A product as returned by the searchCatalog tool (mirrors AdairsProduct).
+// A product as returned by the searchCatalog tool (mirrors AsterHemProduct).
 interface ChatProduct {
   id: string
   name: string
@@ -41,16 +41,16 @@ interface ChatProduct {
 
 const SUGGESTIONS = [
   "What's trending this season",
-  "Style my coastal living room",
-  "Luxe bedding ideas",
+  "An outfit for a spring wedding",
+  "Build me a workwear capsule",
 ]
 
 // Shown to signed-in members. The recent-order prompt is appended separately,
 // but only once we've confirmed the member actually has a recent purchase.
 const MEMBER_SUGGESTIONS = [
   "What's trending this season",
-  "Style my coastal living room",
-  "Luxe bedding ideas",
+  "What goes with my recent order",
+  "An outfit for a spring wedding",
 ]
 
 // Floating conversational shopping agent. The buyer chats in plain language; the
@@ -59,10 +59,10 @@ const MEMBER_SUGGESTIONS = [
 export function StylistChatWidget() {
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState("")
-  // The signed-in Linen Lovers member's Stripe customer id (from localStorage).
+  // The signed-in Edit Club member's Stripe customer id (from localStorage).
   // When present, the agent can pull their purchase history for personalised picks.
   const [customerId, setCustomerId] = useState<string | null>(null)
-  // The member's first name (from their Linen Lovers membership) for the greeting.
+  // The member's first name (from their Edit Club membership) for the greeting.
   const [memberName, setMemberName] = useState<string | null>(null)
   // Items the buyer has added for purchase, keyed by product id.
   const [selection, setSelection] = useState<Record<string, Product>>({})
@@ -101,7 +101,7 @@ export function StylistChatWidget() {
     setCustomerId(localStorage.getItem(LS_CUSTOMER_ID))
   }, [open])
 
-  // When a member opens the panel, pull their Linen Lovers membership so we can
+  // When a member opens the panel, pull their Edit Club membership so we can
   // greet them by name. Cleared for signed-out shoppers.
   useEffect(() => {
     if (!open) return
@@ -170,7 +170,7 @@ export function StylistChatWidget() {
     for (const p of selectedItems) removeFromCart(p.id)
     setSelection({})
     setCheckoutOpen(false)
-    // Let the My Linen Lovers page refresh its purchases and member savings.
+    // Let the My Edit Club page refresh its purchases and member savings.
     notifyOrderPlaced()
   }
 
@@ -182,10 +182,10 @@ export function StylistChatWidget() {
           type="button"
           onClick={() => setOpen(true)}
           className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground shadow-lg transition-transform hover:scale-105"
-          aria-label="Chat with your Adairs agent"
+          aria-label="Chat with Hem, your personal stylist"
         >
           <Sparkles className="h-4 w-4" aria-hidden="true" />
-          Chat with your Adairs agent
+          Chat with Hem
         </button>
       )}
 
@@ -211,7 +211,7 @@ export function StylistChatWidget() {
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
               </span>
               <div className="leading-tight">
-                <p className="text-sm font-semibold">Adairs Stylist</p>
+                <p className="text-sm font-semibold">Aster & Hem Stylist</p>
               </div>
             </div>
             <button
@@ -235,12 +235,12 @@ export function StylistChatWidget() {
                   <div className="rounded-2xl rounded-tl-sm bg-secondary px-3.5 py-2.5 text-sm leading-relaxed text-foreground">
                     {isMember ? (
                       <>
-                        Welcome back, {memberName ?? "Linen Lover"}. Ask me anything about style inspiration or your
+                        Welcome back, {memberName ?? "there"}. Ask me anything about style inspiration or your
                         recent purchases — or try one of these:
                       </>
                     ) : (
                       <>
-                        Hi, I&apos;m your Adairs Stylist. Tell me what you&apos;re shopping for — a gift, a style, a room
+                        Hi, I&apos;m your Aster & Hem Stylist. Tell me what you&apos;re shopping for — a gift, a style, a room
                         — and I&apos;ll find pieces you can buy right here. Try one of these:
                       </>
                     )}
@@ -316,7 +316,7 @@ export function StylistChatWidget() {
                               className="flex items-center gap-2 rounded-2xl bg-secondary px-3.5 py-2.5 text-xs text-muted-foreground"
                             >
                               <Sparkles className="h-3.5 w-3.5 animate-pulse text-accent" aria-hidden="true" />
-                              Searching the Adairs catalogue…
+                              Searching the Aster & Hem catalogue…
                             </div>
                           )
                         }

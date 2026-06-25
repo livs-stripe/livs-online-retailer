@@ -1,45 +1,38 @@
 // =============================================================================
 // Catalog search — powers the Stylist chat agent's `searchCatalog` tool.
 // =============================================================================
-// Self-contained, deterministic, server-safe search over the Adairs catalogue.
+// Self-contained, deterministic, server-safe search over the Aster & Hem catalogue.
 // It maps a free-text shopping query (e.g. "boho cushion for a friend") plus
 // optional filters (category, price range) to a small set of genuinely relevant
 // products the agent can recommend and the buyer can purchase in-chat.
 
-import { ADAIRS_PRODUCTS, type AdairsProduct } from "@/lib/products"
+import { ADAIRS_PRODUCTS, type AsterHemProduct } from "@/lib/products"
 
 // The canonical categories in the catalogue (kept in sync via fuzzy matching).
 const CATEGORIES = Array.from(new Set(ADAIRS_PRODUCTS.map((p) => p.category)))
 
-// Expand common interior-style words into the concrete colour/material/motif
-// vocabulary that actually appears in product names, so a query like "boho"
-// surfaces rust/jute/tassel pieces rather than nothing.
+// Expand common fashion-style words into the concrete colour/fabric/garment
+// vocabulary that actually appears in product names and descriptions, so a query
+// like "minimal" surfaces clean bone/ivory tailoring rather than nothing.
 const STYLE_SYNONYMS: Record<string, string[]> = {
-  boho: ["rust", "mustard", "ochre", "terracotta", "tassel", "fringe", "jute", "rattan", "woven", "natural", "sage"],
-  bohemian: ["rust", "mustard", "ochre", "terracotta", "tassel", "fringe", "jute", "rattan", "woven", "natural"],
-  coastal: ["blue", "white", "sand", "seafoam", "mint", "teal", "natural", "stripe", "sorrento", "capri"],
-  beach: ["blue", "white", "sand", "natural", "stripe"],
-  mediterranean: ["blue", "white", "terracotta", "olive", "gold", "stripe", "amalfi", "santorini", "sorrento"],
-  scandi: ["white", "cream", "ivory", "boucle", "oak", "natural", "stone", "grey", "pale"],
-  scandinavian: ["white", "cream", "ivory", "boucle", "oak", "natural", "stone", "grey"],
-  minimal: ["white", "cream", "stone", "natural", "boucle", "grey"],
-  modern: ["black", "charcoal", "slate", "grey", "stone", "matte", "graphite"],
-  contemporary: ["charcoal", "slate", "grey", "stone", "black"],
-  hamptons: ["navy", "white", "stripe", "blue", "ivory", "cream", "gold"],
-  classic: ["navy", "white", "stripe", "ivory", "cream"],
-  farmhouse: ["jute", "natural", "wool", "oak", "linen", "beige", "washed", "gingham", "wicker"],
-  rustic: ["jute", "natural", "wool", "oak", "linen", "beige", "washed", "timber"],
-  country: ["gingham", "washed", "linen", "natural", "wicker"],
-  japandi: ["bamboo", "oak", "natural", "stone", "boucle", "linen", "undyed", "ash"],
-  zen: ["bamboo", "natural", "stone", "linen"],
-  luxe: ["velvet", "fur", "chenille", "marble", "brass", "gold", "satin", "plush"],
-  glam: ["velvet", "gold", "marble", "brass", "satin"],
-  luxury: ["velvet", "fur", "marble", "brass", "gold", "plush"],
-  tropical: ["palm", "monstera", "fern", "green", "forest", "leaf", "ivy", "tropic"],
-  green: ["green", "forest", "ivy", "sage", "olive"],
-  neutral: ["natural", "linen", "boucle", "cream", "stone", "sesame", "white", "oak", "beige", "umber"],
-  warm: ["rust", "caramel", "umber", "terracotta", "mustard", "tan", "spice"],
-  earthy: ["rust", "caramel", "umber", "terracotta", "olive", "sage", "tan", "natural"],
+  minimal: ["bone", "ivory", "white", "stone", "oatmeal", "ecru", "tailored", "clean", "column", "crew"],
+  minimalist: ["bone", "ivory", "white", "stone", "oatmeal", "ecru", "tailored", "clean", "column"],
+  classic: ["navy", "camel", "ivory", "blazer", "tailored", "trouser", "shirt", "trench", "loafer"],
+  timeless: ["navy", "camel", "ivory", "tailored", "blazer", "trouser"],
+  tailored: ["blazer", "trouser", "tailored", "navy", "charcoal", "shirt"],
+  workwear: ["blazer", "trouser", "shirt", "tailored", "navy", "charcoal", "loafer"],
+  relaxed: ["knit", "linen", "denim", "sage", "oatmeal", "wide-leg", "oversized", "natural", "khaki"],
+  casual: ["knit", "linen", "denim", "tee", "relaxed", "natural", "sneaker"],
+  weekend: ["knit", "linen", "denim", "casual", "relaxed", "sage", "natural"],
+  romantic: ["floral", "slip", "wrap", "silk", "satin", "blush", "champagne", "midi", "dusty rose", "coral"],
+  feminine: ["floral", "silk", "slip", "blush", "wrap", "midi", "champagne"],
+  evening: ["slip", "silk", "satin", "midnight", "black", "champagne", "gold", "heel"],
+  occasion: ["dress", "slip", "silk", "champagne", "heel", "midi"],
+  monochrome: ["black", "charcoal", "midnight", "slate", "leather", "sleek", "tuxedo"],
+  edgy: ["black", "leather", "charcoal", "midnight", "sleek"],
+  earthy: ["terracotta", "rust", "caramel", "chocolate", "tan", "olive", "camel", "suede"],
+  warm: ["terracotta", "rust", "caramel", "camel", "tan", "gold"],
+  neutral: ["bone", "ivory", "stone", "oatmeal", "camel", "natural", "sand", "ecru", "white"],
 }
 
 // Words that carry no search signal — dropped before scoring.
@@ -60,7 +53,7 @@ export interface CatalogSearchParams {
 }
 
 export interface CatalogSearchResult {
-  products: AdairsProduct[]
+  products: AsterHemProduct[]
   count: number
   matchedCategory: string | null
 }
@@ -84,36 +77,37 @@ function resolveCategory(input?: string): string | null {
     return cn.includes(q) || q.includes(cn) || cn.includes(q.replace(/s$/, ""))
   })
   if (partial) return partial
-  // Common synonyms → category.
+  // Common synonyms → occasion category. Garment-type queries (a dress, a
+  // blazer) are intentionally NOT forced into a category here, since those span
+  // multiple occasions — keyword scoring handles them. Only map words that
+  // clearly imply one of the four real categories.
   const map: Record<string, string> = {
-    cushion: "Cushions",
-    pillow: "Cushions",
-    throw: "Throws and Blankets",
-    blanket: "Throws and Blankets",
-    rug: "Rugs and Mats",
-    mat: "Rugs and Mats",
-    bedding: "Bed Linen",
-    sheet: "Bed Linen",
-    quilt: "Bed Linen",
-    duvet: "Bed Linen",
-    linen: "Bed Linen",
-    towel: "Towels and Bath",
-    bath: "Towels and Bath",
-    lamp: "Lighting",
-    light: "Lighting",
-    candle: "Home Fragrance",
-    diffuser: "Home Fragrance",
-    fragrance: "Home Fragrance",
-    decor: "Homewares and Decor",
-    vase: "Homewares and Decor",
-    table: "Furniture",
-    sofa: "Furniture",
-    chair: "Furniture",
-    bed: "Beds and Bedheads",
-    plate: "Tableware",
-    bowl: "Tableware",
-    outdoor: "Outdoor",
-    kids: "Kids Bedding and Decor",
+    work: "Workwear",
+    office: "Workwear",
+    professional: "Workwear",
+    business: "Workwear",
+    weekend: "Weekend",
+    casual: "Weekend",
+    "off-duty": "Weekend",
+    everyday: "Weekend",
+    evening: "Evening",
+    occasion: "Evening",
+    party: "Evening",
+    cocktail: "Evening",
+    formal: "Evening",
+    wedding: "Evening",
+    accessory: "Accessories",
+    accessories: "Accessories",
+    shoe: "Accessories",
+    shoes: "Accessories",
+    heel: "Accessories",
+    bag: "Accessories",
+    tote: "Accessories",
+    clutch: "Accessories",
+    jewellery: "Accessories",
+    jewelry: "Accessories",
+    scarf: "Accessories",
+    belt: "Accessories",
   }
   for (const [k, v] of Object.entries(map)) {
     if (q.includes(k)) return v
@@ -144,7 +138,7 @@ function hasWord(haystack: string, word: string): boolean {
 }
 
 /**
- * Search the Adairs catalogue for products matching a free-text query and
+ * Search the Aster & Hem catalogue for products matching a free-text query and
  * optional filters. Deterministic and dependency-free so it can run inside an
  * AI tool call on the server.
  */
@@ -166,7 +160,9 @@ export function searchCatalog(params: CatalogSearchParams): CatalogSearchResult 
   }
 
   const scored = pool.map((product) => {
-    const text = `${product.name} ${product.variant ?? ""} ${product.category}`.toLowerCase()
+    const text = `${product.name} ${product.colour ?? product.variant ?? ""} ${product.category} ${
+      product.subcategory ?? ""
+    } ${product.description ?? ""}`.toLowerCase()
     let score = 0
     for (const { word, weight } of tokens) {
       if (hasWord(text, word)) score += weight

@@ -55,7 +55,7 @@ export default async function OrderConfirmationPage({
             </svg>
           </span>
 
-          <h1 className="mt-6 text-balance font-serif text-4xl text-foreground">Your Adairs order is confirmed!</h1>
+          <h1 className="mt-6 text-balance font-serif text-4xl text-foreground">Your Aster & Hem order is confirmed!</h1>
           <p className="mx-auto mt-3 max-w-md text-pretty leading-relaxed text-muted-foreground">
             Your curated collection is on its way. {email ? `A receipt has been sent to ${email}.` : ""}
           </p>

@@ -36,7 +36,7 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
   const [initializing, setInitializing] = useState(true)
   // Locks fulfilment + actions while a payment is in flight.
   const [paying, setPaying] = useState(false)
-  // Linen Lovers membership: the typed value, the validated/applied number, and
+  // Edit Club membership: the typed value, the validated/applied number, and
   // any inline validation error.
   const [linenInput, setLinenInput] = useState("")
   const [appliedLinen, setAppliedLinen] = useState<string | null>(null)
@@ -67,7 +67,7 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
   function applyLinen() {
     const value = linenInput.trim()
     if (!isValidLinenNumber(value)) {
-      setLinenError("Enter a valid Linen Lovers number (e.g. LL-123).")
+      setLinenError("Enter a valid Edit Club number (e.g. LL-123).")
       return
     }
     setLinenError(null)
@@ -82,7 +82,7 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
 
   const stripePromise = useMemo(() => getStripePromise(), [])
 
-  // On mount, auto-detect a logged-in Linen Lovers member from their saved Stripe
+  // On mount, auto-detect a logged-in Edit Club member from their saved Stripe
   // customer so they never have to type their membership number.
   useEffect(() => {
     const customerId = typeof window !== "undefined" ? localStorage.getItem(LS_CUSTOMER_ID) : null
@@ -263,16 +263,16 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
           </div>
         </div>
 
-        {/* Linen Lovers membership */}
+        {/* Edit Club membership */}
         <div className="mt-4">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Linen Lovers</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">The Edit Club</p>
           {isMember ? (
             <div className="mt-2 flex items-start justify-between gap-2 rounded-xl border border-accent bg-accent/5 px-3 py-2.5">
               <span className="flex min-w-0 items-start gap-2 text-sm text-foreground">
                 <BadgePercent className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
                 <span className="min-w-0">
                   <span className="block font-medium">
-                    {autoMemberId ? `Linen Lover ${autoMemberId}` : "Member applied"}
+                    {autoMemberId ? `Member ${autoMemberId}` : "Member applied"}
                   </span>
                   <span className="mt-0.5 block text-xs leading-snug text-foreground/70">
                     10% off &middot; free delivery over {formatUsd(freeShipThreshold)}
@@ -308,8 +308,8 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
                     }
                   }}
                   inputMode="numeric"
-                  placeholder="Linen Lovers number"
-                  aria-label="Linen Lovers number"
+                  placeholder="Edit Club number"
+                  aria-label="Edit Club number"
                   disabled={paying}
                   className="h-10 flex-1 rounded-xl"
                 />
@@ -342,7 +342,7 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
           </div>
           {memberDiscount > 0 && (
             <div className="flex items-center justify-between">
-              <dt className="text-accent">Linen Lovers discount</dt>
+              <dt className="text-accent">The Edit Club discount</dt>
               <dd className="text-accent">−{formatUsd(memberDiscount)}</dd>
             </div>
           )}

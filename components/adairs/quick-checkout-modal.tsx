@@ -57,16 +57,16 @@ export function QuickCheckoutModal({
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
-  // When the cart contains the Linen Lovers membership we run a subscription-mode
+  // When the cart contains the Edit Club membership we run a subscription-mode
   // Checkout; these hold the IDs returned so we can confirm the join afterwards.
   const [joinSessionId, setJoinSessionId] = useState<string | null>(null)
   const [joinCustomerId, setJoinCustomerId] = useState<string | null>(null)
-  // A redeemed Adairs gift card (validated server-side and turned into a Stripe
+  // A redeemed Aster & Hem gift card (validated server-side and turned into a Stripe
   // coupon). It discounts the order; the remaining balance is charged via the
   // selected payment API.
   const [giftCard, setGiftCard] = useState<AppliedGiftCard | null>(null)
 
-  // Linen Lovers detection. A signed-in member has their Stripe customer id in
+  // The Edit Club detection. A signed-in member has their Stripe customer id in
   // localStorage; a guest can look theirs up by email to unlock member pricing.
   const [customerId, setCustomerId] = useState<string | null>(null)
   const [isMember, setIsMember] = useState(false)
@@ -80,7 +80,7 @@ export function QuickCheckoutModal({
 
   // The storefront-wide checkout mode chosen via the floating toggle. The
   // Elements (Payment Element) flow is used for ordinary purchases; joining
-  // Linen Lovers always uses embedded subscription Checkout since custom payment
+  // The Edit Club always uses embedded subscription Checkout since custom payment
   // methods and PaymentIntents can't create the 2-year subscription.
   const { mode } = useCheckoutMode()
 
@@ -103,7 +103,7 @@ export function QuickCheckoutModal({
 
   // Once the order is confirmed the cart is already empty, so don't linger on
   // the success screen — auto-close the pop-out shortly after. (The joining flow
-  // redirects to My Linen Lovers instead, so it never reaches this state.)
+  // redirects to My Edit Club instead, so it never reaches this state.)
   useEffect(() => {
     if (!done) return
     const t = setTimeout(() => handleOpenChange(false), 1200)
@@ -184,7 +184,7 @@ export function QuickCheckoutModal({
 
   async function lookupMember() {
     const value = emailInput.trim()
-    // Accept EITHER a Linen Lovers number (e.g. "LL-123") OR the join email, so
+    // Accept EITHER a Edit Club number (e.g. "LL-123") OR the join email, so
     // members can apply their discount in the room-stylist checkout the same way
     // they can elsewhere on the site.
     const looksLikeMemberId = isValidLinenNumber(value) && !value.includes("@")
@@ -208,7 +208,7 @@ export function QuickCheckoutModal({
         // Only surface an email in the "applied for …" label; for a member-number
         // lookup there may be no email, and we never want to show the LL number here.
         setMemberEmail(data.email ?? null)
-        toast.success("Linen Lovers discount applied")
+        toast.success("The Edit Club discount applied")
       } else {
         setLookupNotFound(true)
       }
@@ -220,14 +220,14 @@ export function QuickCheckoutModal({
   }
 
   const handlePaid = useCallback(() => {
-    // Joining: persist the new member and go straight to My Linen Lovers. The
+    // Joining: persist the new member and go straight to My Edit Club. The
     // session_id lets that page confirm the membership and bill any cart
     // products on a separate invoice — no intermediate welcome page.
     if (isJoining) {
       if (joinCustomerId) localStorage.setItem(LS_CUSTOMER_ID, joinCustomerId)
       onComplete()
       if (joinSessionId) {
-        window.location.assign(`/linen-lovers/membership?session_id=${encodeURIComponent(joinSessionId)}`)
+        window.location.assign(`/edit-club/membership?session_id=${encodeURIComponent(joinSessionId)}`)
         return
       }
     }
@@ -257,7 +257,7 @@ export function QuickCheckoutModal({
           body: JSON.stringify({
             cartItems: productCart,
             shipping: price.shipping,
-            shippingLabel: price.shippingFree ? "Free standard shipping — Linen Lovers" : "Standard Delivery",
+            shippingLabel: price.shippingFree ? "Free standard shipping — The Edit Club" : "Standard Delivery",
           }),
         })
         const data = await res.json()
@@ -278,9 +278,9 @@ export function QuickCheckoutModal({
         body: JSON.stringify({
           cartItems: cart,
           shipping: price.shipping,
-          shippingLabel: price.shippingFree ? "Free standard shipping — Linen Lovers" : "Standard Delivery",
+          shippingLabel: price.shippingFree ? "Free standard shipping — The Edit Club" : "Standard Delivery",
           discountAmount: price.memberDiscount,
-          discountLabel: "Linen Lovers member discount",
+          discountLabel: "The Edit Club member discount",
           membershipFee: 0,
           customerId: savedCustomerId,
           // Member savings recorded on the PaymentIntent so the dashboard can
@@ -332,13 +332,13 @@ export function QuickCheckoutModal({
                 <Check className="h-7 w-7 text-accent" aria-hidden="true" />
               </span>
               <h3 className="font-serif text-2xl text-foreground">
-                {isJoining ? "Welcome to Linen Lovers" : "Order confirmed"}
+                {isJoining ? "Welcome to The Edit Club" : "Order confirmed"}
               </h3>
               <p className="max-w-xs text-pretty text-sm leading-relaxed text-muted-foreground">
                 {isJoining
                   ? `Your ${MEMBERSHIP_TERM_YEARS}-year membership is active and renews automatically. Enjoy members-only pricing and free-shipping perks.`
                   : isMember
-                    ? "Thanks, Linen Lover! Your member savings have been added to your account so you can track how much you save over time."
+                    ? "Thanks! Your member savings have been added to your account so you can track how much you save over time."
                     : "Thanks for your order! A confirmation is on its way to your email."}
               </p>
               <Button
@@ -376,7 +376,7 @@ export function QuickCheckoutModal({
                             type="button"
                             onClick={() => removeItem(item.productId)}
                             className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                            aria-label="Remove Linen Lovers membership"
+                            aria-label="Remove Edit Club membership"
                           >
                             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>
@@ -434,13 +434,13 @@ export function QuickCheckoutModal({
                 })}
               </ul>
 
-              {/* Linen Lovers */}
+              {/* The Edit Club */}
               <div className="rounded-2xl border border-border bg-card p-4">
                 {isJoining ? (
                   <div className="flex flex-col gap-1.5">
                     <p className="flex items-center gap-2 text-sm font-medium text-foreground">
                       <Sparkles className="h-4 w-4 shrink-0 text-linen" aria-hidden="true" />
-                      You&apos;re joining Linen Lovers
+                      You&apos;re joining The Edit Club
                     </p>
                     <p className="text-xs leading-relaxed text-muted-foreground">
                       Your {MEMBERSHIP_TERM_YEARS}-year membership starts at checkout and renews automatically. Your{" "}
@@ -452,7 +452,7 @@ export function QuickCheckoutModal({
                   <div className="flex items-center gap-2 text-sm text-foreground">
                     <BadgePercent className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
                     <span>
-                      Linen Lovers discount applied{memberEmail ? ` for ${memberEmail}` : ""} — 10% off full price, 5%
+                      The Edit Club discount applied{memberEmail ? ` for ${memberEmail}` : ""} — 10% off full price, 5%
                       off sale.
                     </span>
                   </div>
@@ -460,7 +460,7 @@ export function QuickCheckoutModal({
                   <div className="flex flex-col gap-2">
                     <p className="flex items-center gap-2 text-sm font-medium text-foreground">
                       <BadgePercent className="h-4 w-4 text-accent" aria-hidden="true" />
-                      Already a Linen Lover?
+                      Already an Edit Club member?
                     </p>
                     <p className="text-xs leading-relaxed text-muted-foreground">
                       Enter your member number (e.g. LL-123) or email to apply your member discount (10% off full price,
@@ -482,7 +482,7 @@ export function QuickCheckoutModal({
                           }
                         }}
                         placeholder="LL-123 or you@email.com"
-                        aria-label="Linen Lovers number or email"
+                        aria-label="Edit Club number or email"
                         disabled={lookupLoading}
                         className="h-10 flex-1 rounded-xl bg-background"
                       />
@@ -499,7 +499,7 @@ export function QuickCheckoutModal({
                     {lookupError && <p className="text-[11px] text-destructive">{lookupError}</p>}
                     {lookupNotFound && (
                       <p className="text-[11px] text-muted-foreground">
-                        No membership found for that number or email. You can continue as a guest or join Linen Lovers
+                        No membership found for that number or email. You can continue as a guest or join The Edit Club
                         to start saving.
                       </p>
                     )}
@@ -525,7 +525,7 @@ export function QuickCheckoutModal({
                 </div>
                 {price.memberDiscount > 0 && (
                   <div className="flex items-center justify-between">
-                    <dt className="text-accent">Linen Lovers discount</dt>
+                    <dt className="text-accent">The Edit Club discount</dt>
                     <dd className="text-accent">{`\u2212${formatAud(price.memberDiscount)}`}</dd>
                   </div>
                 )}
@@ -541,7 +541,7 @@ export function QuickCheckoutModal({
                 </div>
                 {!isMember && !isJoining && !price.shippingFree && (
                   <p className="text-[11px] text-muted-foreground">
-                    Linen Lovers get free standard delivery on orders over {formatAud(FREE_SHIP_THRESHOLD_MEMBER)}.
+                    The Edit Club get free standard delivery on orders over {formatAud(FREE_SHIP_THRESHOLD_MEMBER)}.
                   </p>
                 )}
                 <div className="mt-1 flex items-center justify-between border-t border-border pt-2 font-medium">
@@ -589,9 +589,9 @@ export function QuickCheckoutModal({
                   payload={{
                     cartItems: productCart,
                     shipping: price.shipping,
-                    shippingLabel: price.shippingFree ? "Free standard shipping — Linen Lovers" : "Standard Delivery",
+                    shippingLabel: price.shippingFree ? "Free standard shipping — The Edit Club" : "Standard Delivery",
                     discountAmount: price.memberDiscount,
-                    discountLabel: "Linen Lovers member discount",
+                    discountLabel: "The Edit Club member discount",
                     membershipFee: 0,
                     customerId,
                     memberDiscountAmount: price.memberDiscount,
@@ -734,7 +734,7 @@ function PaymentSummary({
         )}
         {price.memberDiscount > 0 && (
           <div className="flex items-center justify-between">
-            <dt className="text-accent">Linen Lovers discount</dt>
+            <dt className="text-accent">The Edit Club discount</dt>
             <dd className="text-accent">{`\u2212${formatAud(price.memberDiscount)}`}</dd>
           </div>
         )}

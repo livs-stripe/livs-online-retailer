@@ -22,7 +22,7 @@ export const DEFAULT_CHECKOUT_MODE: CheckoutMode = "elements"
 // iframe). Bumping the key lets the inline-Link Elements flow take effect.
 export const LS_CHECKOUT_MODE = "adairs_checkout_mode_v2"
 
-// The Adairs gift card is NOT a Stripe payment method. It is validated server
+// The Aster & Hem gift card is NOT a Stripe payment method. It is validated server
 // side and redeemed by creating a one-off Stripe coupon (Coupons API) for the
 // card balance, which then discounts the order. The remaining balance is settled
 // by whichever payment API the shopper has toggled on — PaymentIntents (Elements

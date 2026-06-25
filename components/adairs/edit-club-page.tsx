@@ -20,18 +20,18 @@ import {
   FREE_SHIP_THRESHOLD_MEMBER,
 } from "@/lib/shipping"
 
-interface LinenLoversPageProps {
+interface EditClubPageProps {
   onHome: () => void
   onNavigate: (key: MenuKey) => void
   onShop: (dest: ShopDestination) => void
-  onLinenLovers: () => void
+  onEditClub: () => void
 }
 
 const BENEFITS = [
   {
     icon: Tag,
     title: "Members-only pricing",
-    body: "Always pay less with exclusive Linen Lovers prices across thousands of products.",
+    body: "Always pay less with exclusive The Edit Club prices across thousands of products.",
   },
   {
     icon: Truck,
@@ -60,12 +60,12 @@ const BENEFITS = [
   },
 ]
 
-export function LinenLoversPage({
+export function EditClubPage({
   onHome,
   onNavigate,
   onShop,
-  onLinenLovers,
-}: LinenLoversPageProps) {
+  onEditClub,
+}: EditClubPageProps) {
   const router = useRouter()
   const { addMembership } = useCart()
   const [isMember, setIsMember] = useState(false)
@@ -83,7 +83,7 @@ export function LinenLoversPage({
     addMembership()
   }
 
-  const viewMembership = () => router.push("/linen-lovers/membership")
+  const viewMembership = () => router.push("/edit-club/membership")
 
   const signOut = () => {
     localStorage.removeItem(LS_CUSTOMER_ID)
@@ -97,7 +97,7 @@ export function LinenLoversPage({
       <SiteChrome
         onNavigate={onNavigate}
         onHome={onHome}
-        onLinenLovers={onLinenLovers}
+        onEditClub={onEditClub}
         onSearch={(q) => onShop({ type: "search", query: q })}
         activeMenu="linen"
       />
@@ -111,7 +111,7 @@ export function LinenLoversPage({
                 <Check className="h-4 w-4" aria-hidden="true" />
               </span>
               <p className="mr-auto text-sm text-foreground">
-                Welcome back, Linen Lover — your member pricing is active.
+                Welcome back — your member pricing is active.
               </p>
               <Button
                 size="sm"
@@ -141,7 +141,7 @@ export function LinenLoversPage({
                 Rewards Membership
               </span>
               <h1 className="mt-4 font-serif text-4xl leading-tight tracking-tight sm:text-5xl">
-                Linen Lovers
+                The Edit Club
               </h1>
               <p className="mt-2 font-serif text-2xl italic">Always save more.</p>
               <p className="mt-5 max-w-md text-pretty text-sm leading-relaxed text-linen-foreground/90">
@@ -230,7 +230,7 @@ export function LinenLoversPage({
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-linen">Membership benefits</p>
             <h2 className="mt-3 text-balance font-serif text-3xl text-foreground sm:text-4xl">
-              Everything a Linen Lover gets
+              Everything an Edit Club member gets
             </h2>
             <p className="mt-3 text-pretty text-sm leading-relaxed text-muted-foreground">
               One membership, two years of rewards across bedroom, bathroom, living and more.
@@ -278,7 +278,7 @@ export function LinenLoversPage({
                 </ul>
                 <p className="text-xs leading-relaxed text-muted-foreground">
                   Buy your {MEMBERSHIP_TERM_YEARS}-year membership now, or add it during checkout when you next shop.
-                  Either way it&apos;s billed once via Stripe — or enter your existing Linen Lovers number to apply
+                  Either way it&apos;s billed once via Stripe — or enter your existing Edit Club number to apply
                   member pricing.
                 </p>
                 <div className="flex flex-wrap gap-3">

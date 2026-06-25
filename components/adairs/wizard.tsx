@@ -5,25 +5,27 @@ import { SiteChrome } from "./site-chrome"
 import { Step1Upload } from "./step1-upload"
 import { Step2Loading } from "./step2-loading"
 import { Step3Recommendations } from "./step3-recommendations"
-import { curateAnalysis } from "@/lib/style-curation"
+import { curateAnalysis, type RoomKind } from "@/lib/style-curation"
 import type { ShopDestination, MenuKey } from "@/lib/categories"
 import type { RoomAnalysis, WizardStep } from "@/lib/types"
 
 // Neutral default shown before any analysis runs.
-const FALLBACK_ANALYSIS: RoomAnalysis = curateAnalysis("", "living")
+const FALLBACK_ANALYSIS: RoomAnalysis = curateAnalysis("", "work")
 
 interface WizardProps {
   demoMode: boolean
   onExit?: () => void
   onNavigate?: (key: MenuKey) => void
   onShop?: (dest: ShopDestination) => void
-  onLinenLovers?: () => void
+  onEditClub?: () => void
 }
 
-export function Wizard({ demoMode, onExit, onNavigate, onShop, onLinenLovers }: WizardProps) {
+export function Wizard({ demoMode, onExit, onNavigate, onShop, onEditClub }: WizardProps) {
   const [step, setStep] = useState<WizardStep>(1)
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null)
   const [stylePrompt, setStylePrompt] = useState("")
+  // The occasion the look is anchored to (work / weekend / evening).
+  const [occasion, setOccasion] = useState<RoomKind>("work")
   // Budget anchor (AUD). Curation fits the whole look within it. `null` = no limit.
   const [budget, setBudget] = useState<number | null>(null)
   const [analysis, setAnalysis] = useState<RoomAnalysis>(FALLBACK_ANALYSIS)
@@ -43,14 +45,14 @@ export function Wizard({ demoMode, onExit, onNavigate, onShop, onLinenLovers }: 
       const res = await fetch("/api/analyse-room", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: imageDataUrl, stylePrompt, budget: budget ?? undefined }),
+        body: JSON.stringify({ imageBase64: imageDataUrl, stylePrompt, occasion, budget: budget ?? undefined }),
       })
       const data = (await res.json()) as RoomAnalysis
       if (data?.recommendedProductIds?.length) setAnalysis(data)
-      else setAnalysis(curateAnalysis(stylePrompt, "living", budget ?? undefined))
+      else setAnalysis(curateAnalysis(stylePrompt, occasion, budget ?? undefined))
     } catch {
       // Even when the request fails, keep the recommendation on-brief and within budget.
-      setAnalysis(curateAnalysis(stylePrompt, "living", budget ?? undefined))
+      setAnalysis(curateAnalysis(stylePrompt, occasion, budget ?? undefined))
     } finally {
       // Keep the loading animation visible for a beat
       const elapsed = Date.now() - startedAt
@@ -68,7 +70,7 @@ export function Wizard({ demoMode, onExit, onNavigate, onShop, onLinenLovers }: 
       <SiteChrome
         onHome={onExit}
         onNavigate={onNavigate}
-        onLinenLovers={onLinenLovers}
+        onEditClub={onEditClub}
         onSearch={(q) => onShop?.({ type: "search", query: q })}
       />
 
@@ -78,9 +80,11 @@ export function Wizard({ demoMode, onExit, onNavigate, onShop, onLinenLovers }: 
             imageDataUrl={imageDataUrl}
             stylePrompt={stylePrompt}
             budget={budget}
+            occasion={occasion}
             onImageChange={setImageDataUrl}
             onStyleChange={setStylePrompt}
             onBudgetChange={setBudget}
+            onOccasionChange={setOccasion}
             onSubmit={handleAnalyse}
           />
         )}

@@ -1,29 +1,29 @@
-// Adairs-style delivery & loyalty pricing rules (modelled on adairs.com.au)
+// Aster & Hem-style delivery & loyalty pricing rules (modelled on adairs.com.au)
 //
 // - Standard delivery is a flat fee, free above a spend threshold.
-// - Linen Lovers members get a lower free-shipping threshold.
+// - Edit Club members get a lower free-shipping threshold.
 // - "Join and save" applies a one-off discount on the current order.
 // - Promotional codes apply a percentage or fixed dollar discount.
 
-// Standard delivery is a flat fee (Adairs increased this from $14.95 to $19.95).
+// Standard delivery is a flat fee (Aster & Hem increased this from $14.95 to $19.95).
 export const STANDARD_SHIPPING = 19.95
-// Free standard delivery thresholds: Linen Lovers members over $50, everyone
+// Free standard delivery thresholds: Edit Club members over $50, everyone
 // else over $175.
 export const FREE_SHIP_THRESHOLD_GUEST = 175
 export const FREE_SHIP_THRESHOLD_MEMBER = 50
-// New Linen Lovers get a $20 welcome reward. It is NOT applied to the sign-up
+// New The Edit Club get a $20 welcome reward. It is NOT applied to the sign-up
 // order — it now arrives within 48 hours of joining (delivered separately), so
 // it never discounts the current checkout.
 export const MEMBERSHIP_JOIN_DISCOUNT = 20
 export const MEMBERSHIP_WELCOME_DELAY_HOURS = 48
-// Existing Linen Lovers members save more on every item: 10% off full-price
+// Existing Edit Club members save more on every item: 10% off full-price
 // items and 5% off items already on sale.
 export const MEMBER_DISCOUNT_FULL = 0.1
 export const MEMBER_DISCOUNT_SALE = 0.05
-// A paid Linen Lovers 2-year membership added as its own line item on the order.
+// A paid The Edit Club 2-year membership added as its own line item on the order.
 export const MEMBERSHIP_PRICE = 19.95
 export const MEMBERSHIP_TERM_YEARS = 2
-export const MEMBERSHIP_LABEL = "Linen Lovers 2-Year Membership"
+export const MEMBERSHIP_LABEL = "The Edit Club 2-Year Membership"
 // Sentinel cart line id used to represent the membership in the cart. It is not a
 // real product in the catalog, so cart/checkout code special-cases this id.
 export const MEMBERSHIP_CART_ID = "linen-lovers-membership"
@@ -47,7 +47,7 @@ export function lookupPromo(code: string): PromoCode | null {
   return PROMO_CODES[code.trim().toUpperCase()] ?? null
 }
 
-// A Linen Lovers number is the "LL-" prefix followed by the member's sequence
+// A Edit Club number is the "LL-" prefix followed by the member's sequence
 // (e.g. "LL-123", "LL-4829301"), case-insensitive and tolerant of a missing
 // hyphen ("LL123"). A bare numeric sequence of 3+ digits is also accepted so
 // members can paste just the number. NOTE: real member ids in this system are
@@ -104,7 +104,7 @@ export interface AgentPriceResult {
 export function computeAgentPrice({ items, fulfillment, isMember }: AgentPriceInput): AgentPriceResult {
   const subtotal = round2(items.reduce((s, i) => s + i.price * i.quantity, 0))
 
-  // Linen Lovers save 10% off full-price items and 5% off items already on sale.
+  // The Edit Club save 10% off full-price items and 5% off items already on sale.
   const memberDiscount = isMember
     ? round2(
         items.reduce(
@@ -120,7 +120,7 @@ export function computeAgentPrice({ items, fulfillment, isMember }: AgentPriceIn
   let shipping = 0
   let shippingFree = true
   if (fulfillment === "delivery") {
-    // Qualification is on the order value (subtotal), matching Adairs' wording
+    // Qualification is on the order value (subtotal), matching Aster & Hem's wording
     // of "free standard delivery on orders over $X".
     shippingFree = subtotal >= freeShipThreshold
     shipping = shippingFree ? 0 : STANDARD_SHIPPING
@@ -206,7 +206,7 @@ export function computeOrder(input: OrderInput): OrderSummary {
   if (hasPostcode) {
     if (freeShipping) {
       shipping = 0
-      shippingLabel = memberActive ? "Free standard shipping — Linen Lovers" : "Free standard shipping"
+      shippingLabel = memberActive ? "Free standard shipping — The Edit Club" : "Free standard shipping"
     } else {
       shipping = STANDARD_SHIPPING
       shippingLabel = `Standard Delivery to ${postcode.trim()}`

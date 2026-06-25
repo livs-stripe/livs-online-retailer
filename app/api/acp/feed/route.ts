@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
 
   return jsonCors({
     seller: {
-      name: "Adairs",
+      name: "Aster & Hem",
       description: "Premium Australian home and linen brand",
       currency: "usd",
       total_products: TOTAL_PRODUCTS,

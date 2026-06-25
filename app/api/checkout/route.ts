@@ -17,12 +17,12 @@ export async function POST(req: NextRequest) {
   let discountAmount = 0
   let discountLabel = "Discount"
   let membershipFee = 0
-  // The signed-in Linen Lovers member (Stripe customer id) and the portion of
+  // The signed-in Edit Club member (Stripe customer id) and the portion of
   // the discount attributable to their membership, captured for "Saved with
   // membership" on the dashboard.
   let customerId: string | null = null
   let memberDiscountAmount = 0
-  // An Adairs gift card redeemed at the review step. The coupon was minted by
+  // An Aster & Hem gift card redeemed at the review step. The coupon was minted by
   // /api/gift-card/apply (Coupons API); the Checkout Session applies it natively
   // via `discounts` so the card pays its share and the Checkout collects the rest.
   let giftCardCouponId: string | null = null
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
   // shipping address / quote when something actually needs to be delivered.
   const hasPhysicalGoods = lineItems.length > 0
 
-  // Add the paid Linen Lovers membership as its own subscription-style line item
+  // Add the paid Edit Club membership as its own subscription-style line item
   // so it shows distinctly on the Stripe invoice.
   if (membershipFee > 0) {
     lineItems.push({
@@ -118,8 +118,8 @@ export async function POST(req: NextRequest) {
   try {
     // Stripe Checkout allows only ONE coupon per session, so we reconcile the two
     // possible discounts here:
-    //   - the Linen Lovers / promo member discount, and
-    //   - the redeemed Adairs gift card (already a coupon from the Coupons API).
+    //   - the The Edit Club / promo member discount, and
+    //   - the redeemed Aster & Hem gift card (already a coupon from the Coupons API).
     // When both are present we mint a single combined coupon for the session; the
     // original gift card coupon still exists in Stripe as the redemption record.
     let giftCardValue = 0
@@ -155,20 +155,20 @@ export async function POST(req: NextRequest) {
       couponId = coupon.id
     }
 
-    // The portion of the discount that came from the Linen Lovers membership,
+    // The portion of the discount that came from the Edit Club membership,
     // recorded (in cents) on the PaymentIntent so the dashboard can total real
     // "Saved with membership" amounts from actual purchases.
     const memberSavingsCents = Math.round(memberDiscountAmount * 100)
     const piMetadata: Record<string, string> = {}
     if (memberSavingsCents > 0) {
       piMetadata[SAVINGS_METADATA_KEY] = String(memberSavingsCents)
-      piMetadata[SAVINGS_LABEL_METADATA_KEY] = "Linen Lovers member discount"
+      piMetadata[SAVINGS_LABEL_METADATA_KEY] = "The Edit Club member discount"
     }
     // Record the product-level order contents on the PaymentIntent so the
     // member's "Recent purchases" can list the items they bought. The reader
     // (mapCharge) reads names/categories from PaymentIntent metadata — the line
     // items alone aren't enough — so without this, orders placed in the same
-    // checkout as a membership sign-up showed only a generic "Adairs order".
+    // checkout as a membership sign-up showed only a generic "Aster & Hem order".
     const orderSummary = summarizeCartItems(cartItems)
     if (orderSummary.items) piMetadata[ITEMS_METADATA_KEY] = orderSummary.items
     if (orderSummary.categories) piMetadata[CATEGORIES_METADATA_KEY] = orderSummary.categories

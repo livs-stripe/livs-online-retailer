@@ -3,16 +3,16 @@
 import { useState } from "react"
 import { MockHome } from "./mock-home"
 import { CategoryPage } from "./category-page"
-import { LinenLoversPage } from "./linen-lovers-page"
+import { EditClubPage } from "./edit-club-page"
 import { Wizard } from "./wizard"
 import { CartProvider } from "./cart-context"
 import type { ShopDestination, MenuKey } from "@/lib/categories"
 
 type View = "home" | "stylist" | "shop" | "linen"
 
-export function AdairsApp({ demoMode }: { demoMode: boolean }) {
-  // Allow deep-linking straight to the Linen Lovers benefits page via
-  // `/?view=linen` (used by the header's Linen Lovers buttons from other routes).
+export function AsterHemApp({ demoMode }: { demoMode: boolean }) {
+  // Allow deep-linking straight to the The Edit Club benefits page via
+  // `/?view=editclub` (used by the header's The Edit Club buttons from other routes).
   const [view, setView] = useState<View>(() => {
     if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("view") === "linen") {
       return "linen"
@@ -37,7 +37,7 @@ export function AdairsApp({ demoMode }: { demoMode: boolean }) {
     scrollTop()
   }
 
-  const goToLinen = () => {
+  const goToEditClub = () => {
     setView("linen")
     scrollTop()
   }
@@ -46,23 +46,23 @@ export function AdairsApp({ demoMode }: { demoMode: boolean }) {
   if (view === "stylist") {
     // The Stylist wizard now shares the storefront cart, so its "Add" buttons
     // drop pieces into the same top-right cart and it renders inside the
-    // CartProvider with the standard Adairs header + nav.
+    // CartProvider with the standard Aster & Hem header + nav.
     content = (
       <Wizard
         demoMode={demoMode}
         onExit={() => setView("home")}
         onNavigate={goToMenu}
         onShop={goToShop}
-        onLinenLovers={goToLinen}
+        onEditClub={goToEditClub}
       />
     )
   } else if (view === "linen") {
     content = (
-      <LinenLoversPage
+      <EditClubPage
         onHome={() => setView("home")}
         onNavigate={goToMenu}
         onShop={goToShop}
-        onLinenLovers={goToLinen}
+        onEditClub={goToEditClub}
       />
     )
   } else if (view === "shop") {
@@ -71,7 +71,7 @@ export function AdairsApp({ demoMode }: { demoMode: boolean }) {
         destination={destination}
         onHome={() => setView("home")}
         onNavigate={goToMenu}
-        onLinenLovers={goToLinen}
+        onEditClub={goToEditClub}
         onShop={goToShop}
       />
     )
@@ -81,7 +81,7 @@ export function AdairsApp({ demoMode }: { demoMode: boolean }) {
         onLaunchStylist={() => setView("stylist")}
         onNavigate={goToMenu}
         onShop={goToShop}
-        onLinenLovers={goToLinen}
+        onEditClub={goToEditClub}
       />
     )
   }

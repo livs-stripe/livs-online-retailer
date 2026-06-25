@@ -22,7 +22,7 @@ interface MembershipJoinGateProps {
   onProceed: (email: string) => void
 }
 
-// Shown before a shopper joins Linen Lovers. We capture their email up front and
+// Shown before a shopper joins The Edit Club. We capture their email up front and
 // check whether they're ALREADY a member. If they are, we sign them in to their
 // existing membership rather than letting them buy a second one (no duplicate
 // memberships). Otherwise we hand back control to start the normal join.
@@ -57,15 +57,15 @@ export function MembershipJoinGate({ open, onOpenChange, onProceed }: Membership
       }
 
       if (data.isMember && data.customerId) {
-        // Already a Linen Lover — sign them in to their existing membership
+        // Already an Edit Club member — sign them in to their existing membership
         // instead of creating a duplicate. A full navigation lets the My Linen
         // Lovers page load their dashboard (purchases + invoices) from the
         // stored customer id.
         localStorage.setItem(LS_CUSTOMER_ID, data.customerId)
         toast.success(
-          `You're already a Linen Lover${data.name ? `, ${String(data.name).split(" ")[0]}` : ""} — signing you in.`,
+          `You're already an Edit Club member${data.name ? `, ${String(data.name).split(" ")[0]}` : ""} — signing you in.`,
         )
-        window.location.assign("/linen-lovers/membership")
+        window.location.assign("/edit-club/membership")
         return
       }
 
@@ -91,7 +91,7 @@ export function MembershipJoinGate({ open, onOpenChange, onProceed }: Membership
           <div className="mx-auto mb-1 inline-flex h-12 w-12 items-center justify-center rounded-full bg-linen/15 text-linen">
             <Sparkles className="h-6 w-6" aria-hidden="true" />
           </div>
-          <DialogTitle className="text-center font-serif text-2xl">Join Linen Lovers</DialogTitle>
+          <DialogTitle className="text-center font-serif text-2xl">Join The Edit Club</DialogTitle>
           <DialogDescription className="text-center text-pretty">
             Enter your email to get started. If you&apos;re already a member, we&apos;ll take you straight to your
             account.

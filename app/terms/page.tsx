@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Adairs Shopping Assistant",
+  title: "Terms of Service | Aster & Hem Shopping Assistant",
   description:
-    "The terms governing use of the Adairs Shopping Assistant and its product catalogue and agentic commerce API.",
+    "The terms governing use of the Aster & Hem Shopping Assistant and its product catalogue and agentic commerce API.",
 }
 
 const UPDATED = "June 2026"
@@ -12,7 +12,7 @@ export default function TermsPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
       <header className="mb-10 border-b border-border pb-8">
-        <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Adairs Shopping Assistant</p>
+        <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Aster & Hem Shopping Assistant</p>
         <h1 className="mt-2 text-balance text-3xl font-semibold text-foreground sm:text-4xl">Terms of Service</h1>
         <p className="mt-3 text-sm text-muted-foreground">Last updated: {UPDATED}</p>
       </header>
@@ -21,7 +21,7 @@ export default function TermsPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Acceptance of terms</h2>
           <p className="text-pretty text-muted-foreground">
-            By accessing or using the Adairs Shopping Assistant, its product catalogue API, or any agentic commerce
+            By accessing or using the Aster & Hem Shopping Assistant, its product catalogue API, or any agentic commerce
             checkout enabled through it (collectively, the &quot;Service&quot;), you agree to be bound by these Terms of
             Service. If you do not agree, do not use the Service.
           </p>
@@ -30,7 +30,7 @@ export default function TermsPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">The Service</h2>
           <p className="text-pretty text-muted-foreground">
-            The Service lets shoppers discover Adairs homewares and furniture, build styled room looks, and initiate
+            The Service lets shoppers discover Aster & Hem homewares and furniture, build styled room looks, and initiate
             purchases. Product discovery is provided through a read-only catalogue API. Purchases, where available, are
             processed by our third-party payment provider on our behalf.
           </p>

@@ -16,7 +16,7 @@ import {
 // billed, so reloading the welcome page never double-charges.
 const GOODS_INVOICED_METADATA_KEY = "goods_invoiced_session"
 
-// Determines the next sequential Linen Lovers member id (e.g. "LL-125") by
+// Determines the next sequential Edit Club member id (e.g. "LL-125") by
 // scanning EVERY existing customer's member_id metadata and incrementing the
 // highest found.
 //
@@ -179,7 +179,7 @@ async function chargeGoodsInvoice(
       // Shown on the invoice so it's clear these are the other cart items bought
       // alongside the membership — kept off the $19.95 membership invoice.
       description:
-        "Adairs order — items purchased with your Linen Lovers sign-up (billed separately from the $19.95 membership).",
+        "Aster & Hem order — items purchased with your Edit Club sign-up (billed separately from the $19.95 membership).",
       metadata: {
         source: "adairs_demo",
         kind: "linen_lovers_goods",
@@ -244,7 +244,7 @@ async function chargeGoodsInvoice(
   // The "Recent purchases" reader (mapCharge) pulls item/category chips from
   // PaymentIntent metadata, and the auto-created PaymentIntent that pays this
   // invoice has none — which is why join-flow cart items previously showed as a
-  // bare "Adairs order" with no products. Stamping it makes the items appear.
+  // bare "Aster & Hem order" with no products. Stamping it makes the items appear.
   if (paidInvoiceId) {
     try {
       const itemsLabel = items
@@ -316,7 +316,7 @@ export async function GET(req: NextRequest) {
     const subscription =
       session.subscription && typeof session.subscription !== "string" ? session.subscription : null
 
-    // Make the newly-joined Linen Lover a proper Stripe customer with membership
+    // Make the newly-joined Edit Club member a proper Stripe customer with membership
     // metadata matching the existing demo members. Only runs once the checkout
     // is actually complete/paid.
     let memberId = customer?.metadata?.[MEMBER_ID_METADATA_KEY] ?? null

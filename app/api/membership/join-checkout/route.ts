@@ -14,7 +14,7 @@ import type { CartItem } from "@/lib/types"
 //
 // Runs an EMBEDDED Checkout in `subscription` mode so a single payment:
 //  - creates the Stripe customer (on a Test Clock for the 2-year simulation),
-//  - creates the auto-renewing 2-year Linen Lovers subscription,
+//  - creates the auto-renewing 2-year The Edit Club subscription,
 //  - adds any products the shopper is buying as one-time lines on the first
 //    invoice, and
 //  - auto-pays that first invoice.
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     // is created by Checkout if this fails.
     let customerId: string | undefined
     try {
-      const clock = await createNowTestClock(stripe, "Linen Lovers simulation")
+      const clock = await createNowTestClock(stripe, "Edit Club simulation")
       const customer = await stripe.customers.create({
         test_clock: clock.id,
         metadata: {
@@ -97,8 +97,8 @@ export async function POST(req: NextRequest) {
         // that any other items bought at the same time are billed separately, so
         // the membership never looks like it cost more than it did.
         description: hasPhysicalGoods
-          ? "Linen Lovers 2-Year Membership — $19.95. Other items in this order are billed on a separate invoice."
-          : "Linen Lovers 2-Year Membership — $19.95.",
+          ? "The Edit Club 2-Year Membership — $19.95. Other items in this order are billed on a separate invoice."
+          : "The Edit Club 2-Year Membership — $19.95.",
         metadata: { membership: "linen_lovers", source: "adairs_demo" },
       },
       metadata: {

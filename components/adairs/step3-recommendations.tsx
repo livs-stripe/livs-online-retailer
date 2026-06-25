@@ -61,9 +61,13 @@ export function Step3Recommendations({
     return activeProducts.filter((p) => placed.has(p.id))
   }, [overrideIds, placedIds, activeProducts])
 
-  // Style brief + room kind passed to the re-style agent so swaps stay on-theme
-  // and category slots resolve correctly.
-  const room: "living" | "bedroom" = analysis.roomType.toLowerCase().includes("bed") ? "bedroom" : "living"
+  // Style brief + occasion passed to the re-style agent so swaps stay on-theme
+  // and garment slots resolve correctly.
+  const occasion: "work" | "weekend" | "evening" = analysis.roomType.toLowerCase().includes("evening")
+    ? "evening"
+    : analysis.roomType.toLowerCase().includes("weekend")
+      ? "weekend"
+      : "work"
 
   const cartIds = new Set(items.map((c) => c.productId))
 
@@ -76,7 +80,7 @@ export function Step3Recommendations({
   // "Redesign room" — re-curate a brand-new on-theme look within the same budget,
   // then trigger a fresh styled-image render of it.
   function handleRedesign() {
-    const ids = curateProductIds(analysis.detectedStyle, room, budget ?? undefined)
+    const ids = curateProductIds(analysis.detectedStyle, occasion, budget ?? undefined)
     setOverrideIds(ids)
     setRegenerateKey((k) => k + 1)
   }
@@ -103,18 +107,18 @@ export function Step3Recommendations({
             className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-accent/40 bg-accent/5 px-4 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-accent/10"
           >
             <Wand2 className="h-4 w-4" aria-hidden="true" />
-            Redesign room
+            Restyle the look
           </button>
           <p className="mt-1.5 text-center text-xs text-muted-foreground">
             Generate a fresh take{budget !== null ? " — still within your budget" : ""}
           </p>
 
           <div className="mt-4 rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-accent">AI Room Read</p>
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-accent">Hem&apos;s Style Read</p>
 
             <dl className="mt-4 flex flex-col gap-3 text-sm">
               <div className="flex items-center justify-between gap-4">
-                <dt className="text-muted-foreground">Room type</dt>
+                <dt className="text-muted-foreground">Occasion</dt>
                 <dd className="font-medium text-foreground">{analysis.roomType}</dd>
               </div>
               <div className="flex items-center justify-between gap-4">
@@ -145,7 +149,7 @@ export function Step3Recommendations({
               <blockquote className="mt-2 font-serif text-base italic leading-relaxed text-foreground">
                 {analysis.stylistNote}
               </blockquote>
-              <figcaption className="mt-2 text-xs text-muted-foreground">— Your Adairs AI Stylist</figcaption>
+              <figcaption className="mt-2 text-xs text-muted-foreground">— Hem, your Aster &amp; Hem stylist</figcaption>
             </figure>
           </div>
         </div>
@@ -154,9 +158,9 @@ export function Step3Recommendations({
         <div>
           <div className="flex items-end justify-between gap-4">
             <div>
-              <h2 className="font-serif text-3xl text-foreground">Your Curated Collection</h2>
+              <h2 className="font-serif text-3xl text-foreground">Your Curated Edit</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                {curatedProducts.length} pieces styled into your room above
+                {curatedProducts.length} pieces styled into your look above
               </p>
             </div>
           </div>

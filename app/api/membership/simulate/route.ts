@@ -10,7 +10,7 @@ import {
 // Advancing a clock simulates real billing events and may take a little while.
 export const maxDuration = 60
 
-// Default horizon for the simulation. The Linen Lovers membership renews every
+// Default horizon for the simulation. The Edit Club membership renews every
 // 2 years, so 2 years lands exactly on the first renewal.
 const DEFAULT_YEARS = 2
 

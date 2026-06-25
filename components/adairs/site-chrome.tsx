@@ -10,14 +10,14 @@ import { NAV_MENU, type MenuKey } from "@/lib/categories"
 interface SiteChromeProps {
   onNavigate?: (key: MenuKey) => void
   onHome?: () => void
-  onLinenLovers?: () => void
+  onEditClub?: () => void
   onSearch?: (query: string) => void
   // The page the shopper is currently on, so its nav link can be marked active.
-  // "linen" highlights the Linen Lovers entry.
+  // "linen" highlights the The Edit Club entry.
   activeMenu?: MenuKey | "linen"
 }
 
-export function SiteChrome({ onNavigate, onHome, onLinenLovers, onSearch, activeMenu }: SiteChromeProps) {
+export function SiteChrome({ onNavigate, onHome, onEditClub, onSearch, activeMenu }: SiteChromeProps) {
   const router = useRouter()
   const { itemCount, openCheckout } = useCart()
   const [query, setQuery] = useState("")
@@ -45,8 +45,8 @@ export function SiteChrome({ onNavigate, onHome, onLinenLovers, onSearch, active
       <div className="bg-primary text-primary-foreground">
         <button
           type="button"
-          onClick={onLinenLovers}
-          disabled={!onLinenLovers}
+          onClick={onEditClub}
+          disabled={!onEditClub}
           className="mx-auto flex w-full max-w-6xl items-center justify-center gap-2 px-4 py-2.5 text-center text-xs font-medium tracking-wide transition-colors enabled:hover:text-primary-foreground/80 enabled:cursor-pointer"
         >
           <span>The Edit Club — Members Always Save More</span>
@@ -109,7 +109,7 @@ export function SiteChrome({ onNavigate, onHome, onLinenLovers, onSearch, active
             </button>
             <button
               type="button"
-              onClick={() => router.push("/linen-lovers/membership")}
+              onClick={() => router.push("/edit-club/membership")}
               className="cursor-pointer flex-col items-center text-[10px] transition-colors hover:text-brand"
               aria-label="Account and The Edit Club sign in"
             >
@@ -176,7 +176,7 @@ export function SiteChrome({ onNavigate, onHome, onLinenLovers, onSearch, active
           })}
           <button
             type="button"
-            onClick={onLinenLovers}
+            onClick={onEditClub}
             aria-current={activeMenu === "linen" ? "page" : undefined}
             className="cursor-pointer rounded-full bg-linen px-3 py-1 text-sm font-semibold uppercase tracking-wide text-linen-foreground transition-colors hover:bg-linen/90"
           >
@@ -209,7 +209,7 @@ export function SiteChrome({ onNavigate, onHome, onLinenLovers, onSearch, active
           })}
           <button
             type="button"
-            onClick={onLinenLovers}
+            onClick={onEditClub}
             aria-current={activeMenu === "linen" ? "page" : undefined}
             className="whitespace-nowrap rounded-full bg-linen px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-linen-foreground transition-colors hover:bg-linen/90"
           >

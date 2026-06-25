@@ -18,7 +18,7 @@ interface Body {
   membershipFee?: number
   customerId?: string | null
   memberDiscountAmount?: number
-  // An Adairs gift card redeemed at the review step. The coupon was minted by
+  // An Aster & Hem gift card redeemed at the review step. The coupon was minted by
   // /api/gift-card/apply (Coupons API); here we read its value back from Stripe
   // and subtract it from the PaymentIntent amount so the card pays its share and
   // the Payment Element only collects the remaining balance.
@@ -31,7 +31,7 @@ interface Body {
 }
 
 // Storefront checkout via the PaymentIntents API. This powers the "Elements"
-// checkout mode. When an Adairs gift card has been redeemed, its coupon value is
+// checkout mode. When an Aster & Hem gift card has been redeemed, its coupon value is
 // subtracted here so the Payment Element only collects the remaining balance —
 // the gift card (Coupons API) and the card (PaymentIntents API) settle the order
 // together. Amounts are priced server-side from the catalog so the client can't
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
   if (orderSummary.categories) metadata[CATEGORIES_METADATA_KEY] = orderSummary.categories
   if (memberSavingsCents > 0) {
     metadata[SAVINGS_METADATA_KEY] = String(memberSavingsCents)
-    metadata[SAVINGS_LABEL_METADATA_KEY] = "Linen Lovers member discount"
+    metadata[SAVINGS_LABEL_METADATA_KEY] = "The Edit Club member discount"
   }
   if (giftCardApplied > 0) {
     metadata.adairs_gift_card_coupon = String(giftCardCouponId)
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
       // including them makes Stripe reject the intent ("afterpay_clearpay only
       // supports aud") and checkout fails to start.
       payment_method_types: ["card"],
-      description: `Adairs — ${itemCount} item${itemCount === 1 ? "" : "s"}`,
+      description: `Aster & Hem — ${itemCount} item${itemCount === 1 ? "" : "s"}`,
       ...(customerId ? { customer: customerId } : {}),
       metadata,
     })

@@ -11,9 +11,9 @@ export async function GET() {
   const spec = {
     openapi: "3.1.0",
     info: {
-      title: "Adairs Agentic Commerce API",
+      title: "Aster & Hem Agentic Commerce API",
       description:
-        "Search Adairs' catalogue and complete a guided checkout. Always search/paginate the feed — never request the full catalogue at once.",
+        "Search Aster & Hem's catalogue and complete a guided checkout. Always search/paginate the feed — never request the full catalogue at once.",
       version: "1.0.0",
     },
     servers: [{ url: appBaseUrl() }],
@@ -21,7 +21,7 @@ export async function GET() {
       "/api/acp/feed": {
         get: {
           operationId: "getFeed",
-          summary: "Search and paginate the Adairs product catalogue",
+          summary: "Search and paginate the Aster & Hem product catalogue",
           description:
             "Returns a paginated, filtered slice of the catalogue. Use q and/or category to narrow results; max 12 items per call. Each product has an image_url — always show it inline with markdown ![name](image_url).",
           parameters: [
@@ -62,7 +62,7 @@ export async function GET() {
                   schema: { $ref: "#/components/schemas/FeedResponse" },
                   example: {
                     seller: {
-                      name: "Adairs",
+                      name: "Aster & Hem",
                       description: "Premium Australian home and linen brand",
                       currency: "usd",
                       total_products: 855,
@@ -74,7 +74,7 @@ export async function GET() {
                         id: "100",
                         name: "Stonewashed French Linen Quilt Cover (Queen)",
                         description:
-                          "Stonewashed French Linen Quilt Cover — Queen · Bed Linen from Adairs, a premium Australian home and linen brand.",
+                          "Stonewashed French Linen Quilt Cover — Queen · Bed Linen from Aster & Hem, a premium Australian home and linen brand.",
                         price_cents: 28900,
                         price_display: "$289.00",
                         category: "Bed Linen",
@@ -282,7 +282,7 @@ export async function GET() {
                     payment_method: "Visa •••• 4242",
                     estimated_delivery: "3–5 business days",
                     confirmation_message:
-                      "Your Adairs order is confirmed! You'll receive a shipping notification soon.",
+                      "Your Aster & Hem order is confirmed! You'll receive a shipping notification soon.",
                     items_ordered: [
                       {
                         product_id: "100",

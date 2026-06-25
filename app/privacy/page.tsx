@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Adairs Shopping Assistant",
+  title: "Privacy Policy | Aster & Hem Shopping Assistant",
   description:
-    "How the Adairs Shopping Assistant handles data when used with ChatGPT and the Adairs product catalogue API.",
+    "How the Aster & Hem Shopping Assistant handles data when used with ChatGPT and the Aster & Hem product catalogue API.",
 }
 
 const UPDATED = "June 2026"
@@ -12,7 +12,7 @@ export default function PrivacyPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
       <header className="mb-10 border-b border-border pb-8">
-        <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Adairs Shopping Assistant</p>
+        <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Aster & Hem Shopping Assistant</p>
         <h1 className="mt-2 text-balance text-3xl font-semibold text-foreground sm:text-4xl">Privacy Policy</h1>
         <p className="mt-3 text-sm text-muted-foreground">Last updated: {UPDATED}</p>
       </header>
@@ -21,8 +21,8 @@ export default function PrivacyPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Overview</h2>
           <p className="text-pretty text-muted-foreground">
-            This service exposes a read-only product catalogue API used by the Adairs Shopping Assistant, a custom GPT
-            available in ChatGPT. It helps shoppers discover Adairs homewares and furniture and build styled room looks.
+            This service exposes a read-only product catalogue API used by the Aster & Hem Shopping Assistant, a custom GPT
+            available in ChatGPT. It helps shoppers discover Aster & Hem homewares and furniture and build styled room looks.
             This policy explains what data the API receives and how it is used.
           </p>
         </section>
@@ -39,7 +39,7 @@ export default function PrivacyPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">How we use information</h2>
           <ul className="flex list-disc flex-col gap-2 pl-5 text-muted-foreground">
-            <li>To search the Adairs product catalogue and return matching products, prices, and images.</li>
+            <li>To search the Aster & Hem product catalogue and return matching products, prices, and images.</li>
             <li>To operate, secure, and improve the reliability of the API.</li>
             <li>To generate aggregate, non-identifying usage and performance metrics.</li>
           </ul>
@@ -72,7 +72,7 @@ export default function PrivacyPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-semibold">Contact</h2>
           <p className="text-pretty text-muted-foreground">
-            For questions about this policy or the Adairs Shopping Assistant, please contact the team that operates this
+            For questions about this policy or the Aster & Hem Shopping Assistant, please contact the team that operates this
             deployment.
           </p>
         </section>

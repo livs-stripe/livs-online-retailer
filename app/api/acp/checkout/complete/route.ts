@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       payment_method: "Visa •••• 4242",
       estimated_delivery: "3–5 business days",
       confirmation_message:
-        "Your Adairs order is confirmed! You'll receive a shipping notification soon.",
+        "Your Aster & Hem order is confirmed! You'll receive a shipping notification soon.",
       items_ordered: [],
       stripe_payment_id: checkoutId,
     })
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       payment_method: "Visa •••• 4242",
       estimated_delivery: "3–5 business days",
       confirmation_message:
-        "Your Adairs order is confirmed! You'll receive a shipping notification soon.",
+        "Your Aster & Hem order is confirmed! You'll receive a shipping notification soon.",
       items_ordered: itemsFromMetadata(captured.metadata?.items),
       stripe_payment_id: captured.id,
     })

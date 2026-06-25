@@ -1,4 +1,4 @@
-// Adairs is an Australian brand, so every price is presented in AUD with an
+// Aster & Hem is an Australian brand, so every price is presented in AUD with an
 // explicit "A$" symbol (e.g. "A$19.95") for a consistent, unambiguous currency
 // across the whole storefront, agent and membership areas. (Stripe settlement
 // stays in USD behind the scenes for the agentic/ACS preview; the amounts are

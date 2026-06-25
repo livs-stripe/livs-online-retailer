@@ -1,7 +1,7 @@
 import type Stripe from "stripe"
 import { LINEN_LOVERS_PRODUCT_ID, LINEN_LOVERS_PRICE_ID } from "@/lib/membership"
 
-// Server-only resolver for the Linen Lovers 2-year membership price.
+// Server-only resolver for the The Edit Club 2-year membership price.
 //
 // The membership product was originally hardcoded to a single Stripe account's
 // product id. When the connected account changes (e.g. switching from a US to an
@@ -15,7 +15,7 @@ import { LINEN_LOVERS_PRODUCT_ID, LINEN_LOVERS_PRICE_ID } from "@/lib/membership
 //   4. Create the product + a recurring $19.95 / 2-year price if none exists.
 // So it works on whatever Stripe account is currently connected.
 
-const MEMBERSHIP_NAME = "Linen Lovers Membership"
+const MEMBERSHIP_NAME = "The Edit Club Membership"
 const MEMBERSHIP_AMOUNT = 1995 // $19.95 in cents
 const MEMBERSHIP_CURRENCY = "usd" // USD required for the ACS Preview demo
 const MEMBERSHIP_INTERVAL: Stripe.PriceCreateParams.Recurring.Interval = "year"
@@ -59,14 +59,14 @@ async function findMembershipProductByName(stripe: Stripe): Promise<string | nul
 async function createMembershipPrice(stripe: Stripe): Promise<Stripe.Price> {
   const product = await stripe.products.create({
     name: MEMBERSHIP_NAME,
-    description: "Linen Lovers 2-year membership",
+    description: "The Edit Club 2-year membership",
   })
   return stripe.prices.create({
     product: product.id,
     currency: MEMBERSHIP_CURRENCY,
     unit_amount: MEMBERSHIP_AMOUNT,
     recurring: { interval: MEMBERSHIP_INTERVAL, interval_count: MEMBERSHIP_INTERVAL_COUNT },
-    nickname: "Linen Lovers 2-year membership",
+    nickname: "The Edit Club 2-year membership",
   })
 }
 

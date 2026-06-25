@@ -16,7 +16,7 @@ const AGENT = "adairs_ai_stylist"
 interface PaymentIntentBody {
   cartItems?: CartItem[]
   fulfillment?: "delivery" | "pickup"
-  // A Linen Lovers membership number. When valid, the buyer gets the member
+  // A Edit Club membership number. When valid, the buyer gets the member
   // discount and the lower free-delivery threshold. Validated server-side so the
   // charged amount can't be discounted from the client.
   linenNumber?: string
@@ -24,7 +24,7 @@ interface PaymentIntentBody {
   // buyer switched delivery ↔ pickup) instead of creating a new one — the
   // clientSecret stays stable so the mounted Payment Element keeps its state.
   paymentIntentId?: string
-  // The Linen Lovers member's Stripe customer id (from localStorage). When
+  // The Edit Club member's Stripe customer id (from localStorage). When
   // present the order is attached to their customer so it appears in their
   // purchase history and the AI Stylist can personalise future recommendations.
   customerId?: string | null
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
 
   // The logged-in member's Stripe customer (from localStorage). When present we
   // verify membership from the customer record itself, so the member never has
-  // to type their Linen Lovers number.
+  // to type their Edit Club number.
   const customerId = typeof body.customerId === "string" && body.customerId ? body.customerId : null
 
   // Determine membership SERVER-SIDE. The authoritative source is the customer's
@@ -124,13 +124,13 @@ export async function POST(req: NextRequest) {
     if (orderSummary.items) metadata[ITEMS_METADATA_KEY] = orderSummary.items
     if (orderSummary.categories) metadata[CATEGORIES_METADATA_KEY] = orderSummary.categories
 
-    // Record the Linen Lovers savings so the member's dashboard "Saved with
+    // Record the The Edit Club savings so the member's dashboard "Saved with
     // membership" total includes in-chat orders. Without this, agent purchases
     // would show no savings even when the member discount was applied.
     const memberSavingsCents = Math.round(memberDiscount * 100)
     if (memberApplied && memberSavingsCents > 0) {
       metadata[SAVINGS_METADATA_KEY] = String(memberSavingsCents)
-      metadata[SAVINGS_LABEL_METADATA_KEY] = "Linen Lovers member discount"
+      metadata[SAVINGS_LABEL_METADATA_KEY] = "The Edit Club member discount"
     }
 
     // A customer session lets the Payment Element surface the member's saved
@@ -186,7 +186,7 @@ export async function POST(req: NextRequest) {
       // can't open inside the embedded preview iframe and gets pushed out to a
       // new browser tab, which is a poor in-chat experience.
       payment_method_types: ["card"],
-      description: `Adairs Stylist — ${itemCount} item${itemCount === 1 ? "" : "s"}`,
+      description: `Aster & Hem Stylist — ${itemCount} item${itemCount === 1 ? "" : "s"}`,
       ...(customerId ? { customer: customerId } : {}),
       metadata,
     })

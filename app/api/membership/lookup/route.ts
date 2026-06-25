@@ -5,8 +5,8 @@ import { isValidLinenNumber, normaliseLinenNumber } from "@/lib/shipping"
 import { MEMBER_ID_METADATA_KEY } from "@/lib/membership"
 import { findCustomerByEmail, findCustomerByMemberId } from "@/lib/member-lookup"
 
-// Looks up an existing Linen Lover by EITHER the email on their Stripe customer
-// record OR their Linen Lovers member number (e.g. "LL-123"). This is a
+// Looks up an existing Edit Club member by EITHER the email on their Stripe customer
+// record OR their Edit Club member number (e.g. "LL-123"). This is a
 // lightweight "login" for the demo so the dashboard/portal and member pricing
 // can load. In a real app this would sit behind proper authentication.
 export async function POST(req: NextRequest) {
@@ -29,18 +29,18 @@ export async function POST(req: NextRequest) {
     let customer: Stripe.Customer | null = null
 
     if (memberId) {
-      // Resolve by Linen Lovers number. We accept "LL-123", "ll123" or "123"
+      // Resolve by Edit Club number. We accept "LL-123", "ll123" or "123"
       // and normalise to the canonical "LL-<n>" stored in customer metadata.
       if (!isValidLinenNumber(memberId)) {
         return NextResponse.json(
-          { error: "Enter a valid Linen Lovers number (e.g. LL-123)." },
+          { error: "Enter a valid Edit Club number (e.g. LL-123)." },
           { status: 400 },
         )
       }
       customer = await findCustomerByMemberId(stripe, normaliseLinenNumber(memberId))
       if (!customer) {
         return NextResponse.json(
-          { error: "We couldn't find that Linen Lovers number." },
+          { error: "We couldn't find that Edit Club number." },
           { status: 404 },
         )
       }

@@ -19,7 +19,7 @@ export interface ElementsCheckoutPayload {
   membershipFee: number
   customerId: string | null
   memberDiscountAmount: number
-  // A redeemed Adairs gift card. The coupon (Coupons API) is created at the
+  // A redeemed Aster & Hem gift card. The coupon (Coupons API) is created at the
   // review step; here it tells the PaymentIntent how much the card already covers.
   giftCardCouponId: string | null
   giftCardAmount: number

@@ -78,12 +78,12 @@ export function MockHome({
   onLaunchStylist,
   onNavigate,
   onShop,
-  onLinenLovers,
+  onEditClub,
 }: {
   onLaunchStylist: () => void
   onNavigate: (key: MenuKey) => void
   onShop: (dest: ShopDestination) => void
-  onLinenLovers: () => void
+  onEditClub: () => void
 }) {
   const { addToCart } = useCart()
   const featured = ADAIRS_PRODUCTS.filter((p) => p.featured).slice(0, 4)
@@ -92,7 +92,7 @@ export function MockHome({
     <div className="flex min-h-screen flex-col bg-background">
       <SiteChrome
         onNavigate={onNavigate}
-        onLinenLovers={onLinenLovers}
+        onEditClub={onEditClub}
         onSearch={(q) => onShop({ type: "search", query: q })}
       />
 

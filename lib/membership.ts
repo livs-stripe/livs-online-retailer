@@ -1,10 +1,10 @@
-// Linen Lovers Stripe Billing (subscription) configuration & shared types.
+// The Edit Club Stripe Billing (subscription) configuration & shared types.
 //
 // The membership is a real Stripe subscription against an existing product in
 // the connected (test mode) Stripe account. Prices are fetched dynamically so
 // we never hardcode a price ID that could drift.
 
-// Linen Lovers membership product + price on the connected (AU) Stripe account.
+// Edit Club membership product + price on the connected (AU) Stripe account.
 // The resolver in lib/membership-price.ts tries the price first, then the
 // product, and self-heals if neither exists on the active account.
 export const LINEN_LOVERS_PRODUCT_ID = "prod_Ugfsub23cnQZed"
@@ -16,25 +16,25 @@ export const LS_CUSTOMER_ID = "ll_customer_id"
 export const LS_SUBSCRIPTION_ID = "ll_subscription_id"
 
 // Window event fired whenever an order is paid for (parent cart OR the in-chat
-// stylist checkout). The My Linen Lovers page listens for it and re-fetches so
+// stylist checkout). The My Edit Club page listens for it and re-fetches so
 // "Recent purchases", billing history, and member savings reflect the new order
 // without a manual reload.
 export const ORDER_PLACED_EVENT = "adairs:order-placed"
 
-/** Notify any open My Linen Lovers view that a new order was just placed. */
+/** Notify any open My Edit Club view that a new order was just placed. */
 export function notifyOrderPlaced() {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event(ORDER_PLACED_EVENT))
   }
 }
 
-// Linen Lovers customer record format, mirroring the existing demo members
-// (e.g. member_id "LL-123", description "Linen Lovers demo member"). New members
+// The Edit Club customer record format, mirroring the existing demo members
+// (e.g. member_id "LL-123", description "Edit Club demo member"). New members
 // created at join time are stamped with the same shape so they're consistent.
 export const MEMBER_ID_METADATA_KEY = "member_id"
 export const MEMBER_ID_PREFIX = "LL-"
 export const MEMBER_ID_START = 123 // existing members occupy LL-123, LL-124
-export const MEMBER_DESCRIPTION = "Linen Lovers demo member"
+export const MEMBER_DESCRIPTION = "Edit Club demo member"
 
 // Formats a numeric sequence into the canonical member id (e.g. 125 -> "LL-125").
 export function formatMemberId(seq: number): string {
@@ -52,7 +52,7 @@ export function parseMemberId(memberId: string | null | undefined): number | nul
 // non-member pricing — used for the "you've saved $X" headline on the dashboard.
 export const SAVINGS_PER_RENEWAL = 30
 
-// Metadata keys used to record the real Linen Lovers member discount on the
+// Metadata keys used to record the real The Edit Club member discount on the
 // PaymentIntent of a front-end purchase. The dashboard sums these to show
 // "Saved with membership" from actual captured savings rather than an estimate.
 export const SAVINGS_METADATA_KEY = "linen_lovers_savings" // amount in cents (string)

@@ -47,18 +47,18 @@ function buildDiscountMap(invoices: Stripe.Invoice[]): Map<string, DiscountInfo>
   return map
 }
 
-// Reads the Linen Lovers savings recorded on a charge's PaymentIntent metadata
+// Reads the The Edit Club savings recorded on a charge's PaymentIntent metadata
 // (set at front-end checkout). Returns null when no membership savings applies.
 function savingsFromPaymentIntent(charge: Stripe.Charge): DiscountInfo | null {
   const pi = charge.payment_intent
   if (!pi || typeof pi === "string") return null
   const amount = Number.parseInt(pi.metadata?.[SAVINGS_METADATA_KEY] ?? "", 10)
   if (!Number.isFinite(amount) || amount <= 0) return null
-  return { amount, label: pi.metadata?.[SAVINGS_LABEL_METADATA_KEY] ?? "Linen Lovers member discount" }
+  return { amount, label: pi.metadata?.[SAVINGS_LABEL_METADATA_KEY] ?? "The Edit Club member discount" }
 }
 
 // Collects the charge & PaymentIntent ids that paid subscription invoices, so
-// the recurring Linen Lovers membership charge can be excluded from the member's
+// the recurring Edit Club membership charge can be excluded from the member's
 // "Recent purchases" (which should list only their product orders, never the
 // membership itself).
 function buildMembershipPaymentIds(invoices: Stripe.Invoice[]): Set<string> {
@@ -109,7 +109,7 @@ function mapCharge(c: Stripe.Charge, discountMap: Map<string, DiscountInfo>): Me
     !rawDescription || /payment for invoice/i.test(rawDescription)
       ? items.length > 0
         ? items.join(", ")
-        : "Adairs order"
+        : "Aster & Hem order"
       : rawDescription
 
   return {
@@ -157,7 +157,7 @@ export async function fetchPurchasesPage(
     customer: customerId,
     limit: PURCHASE_PAGE_SIZE,
     created: { gte },
-    // Needed to read Linen Lovers savings recorded on the PaymentIntent.
+    // Needed to read The Edit Club savings recorded on the PaymentIntent.
     expand: ["data.payment_intent"],
   }
   if (startingAfter) params.starting_after = startingAfter
@@ -187,7 +187,7 @@ export interface StylistPurchase {
   items: string[]
   // Unique product categories in the order (e.g. ["Throws and Blankets"]).
   categories: string[]
-  // Human summary fallback (e.g. "Adairs — 2 items") for older orders.
+  // Human summary fallback (e.g. "Aster & Hem — 2 items") for older orders.
   description: string
   // Order total in dollars.
   amount: number
@@ -212,7 +212,7 @@ export async function fetchRecentPurchasesForStylist(
   }))
 }
 
-// Totals the real Linen Lovers member savings (in cents) captured across a
+// Totals the real Edit Club member savings (in cents) captured across a
 // customer's purchases from the past two years.
 //
 // This mirrors the per-purchase discount resolution in `mapCharge`, so the

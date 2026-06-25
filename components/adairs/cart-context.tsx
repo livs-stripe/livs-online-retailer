@@ -62,7 +62,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (p) toast.success(`${p.name} added to cart`)
   }, [])
 
-  // Actually adds the Linen Lovers membership as its own cart line and opens the
+  // Actually adds the Edit Club membership as its own cart line and opens the
   // cart so the member can complete the join (and any items they're buying) in
   // one go. Guarded so the membership can't be added twice.
   const startJoin = useCallback(() => {
@@ -72,10 +72,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         : [...prev, { productId: MEMBERSHIP_CART_ID, quantity: 1 }],
     )
     setCheckoutOpen(true)
-    toast.success("Linen Lovers membership added to cart")
+    toast.success("Edit Club membership added to cart")
   }, [])
 
-  // Public entry point for "Join Linen Lovers". Opens an email gate first so a
+  // Public entry point for "Join The Edit Club". Opens an email gate first so a
   // shopper who already has a membership is signed in to their existing account
   // instead of buying a second one (prevents duplicate memberships). Brand-new
   // emails fall through to startJoin via the gate's onProceed.
@@ -98,7 +98,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clear = useCallback(() => setItems([]), [])
   const openCheckout = useCallback(() => setCheckoutOpen(true), [])
 
-  // Parent-cart checkout finished: clear the cart AND let the My Linen Lovers
+  // Parent-cart checkout finished: clear the cart AND let the My Edit Club
   // page know so it can refresh purchases/savings.
   const handleCheckoutComplete = useCallback(() => {
     clear()

@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import type Stripe from "stripe"
 import { getStripe } from "@/lib/stripe"
 
-// Stripe webhook receiver for the Linen Lovers subscription demo.
+// Stripe webhook receiver for the The Edit Club subscription demo.
 //
 // Forward events locally with:
 //   stripe listen --forward-to localhost:3000/api/webhooks
