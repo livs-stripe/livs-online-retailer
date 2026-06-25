@@ -35,7 +35,7 @@ export function SiteChrome({ onNavigate, onHome, onLinenLovers, onSearch, active
 
   const showStoreFinder = () => {
     toast("Store finder", {
-      description: "Adairs has 170+ stores across Australia and New Zealand. Enter your postcode in-store search soon.",
+      description: "Aster & Hem has boutiques across Australia and New Zealand. Postcode store search coming soon.",
     })
   }
 
@@ -49,7 +49,7 @@ export function SiteChrome({ onNavigate, onHome, onLinenLovers, onSearch, active
           disabled={!onLinenLovers}
           className="mx-auto flex w-full max-w-6xl items-center justify-center gap-2 px-4 py-2.5 text-center text-xs font-medium tracking-wide transition-colors enabled:hover:text-primary-foreground/80 enabled:cursor-pointer"
         >
-          <span>Linen Lovers Always Save More!</span>
+          <span>The Edit Club — Members Always Save More</span>
         </button>
       </div>
 
@@ -69,11 +69,11 @@ export function SiteChrome({ onNavigate, onHome, onLinenLovers, onSearch, active
               type="button"
               onClick={onHome}
               className="flex items-center"
-              aria-label="Adairs home"
+              aria-label="Aster & Hem home"
               disabled={!onHome}
             >
-              <span className="font-serif text-[1.75rem] font-medium lowercase leading-none tracking-tight text-foreground">
-                adairs
+              <span className="font-serif text-[1.75rem] font-medium leading-none tracking-tight text-foreground">
+                Aster &amp; Hem
               </span>
             </button>
           </div>
@@ -92,7 +92,7 @@ export function SiteChrome({ onNavigate, onHome, onLinenLovers, onSearch, active
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Shop over 6,000 products"
+                placeholder="Search the collection"
                 className="w-full rounded-md border border-border bg-card py-2.5 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
@@ -111,7 +111,7 @@ export function SiteChrome({ onNavigate, onHome, onLinenLovers, onSearch, active
               type="button"
               onClick={() => router.push("/linen-lovers/membership")}
               className="cursor-pointer flex-col items-center text-[10px] transition-colors hover:text-brand"
-              aria-label="Account and Linen Lovers sign in"
+              aria-label="Account and The Edit Club sign in"
             >
               <User className="h-5 w-5" aria-hidden="true" />
             </button>
@@ -145,7 +145,7 @@ export function SiteChrome({ onNavigate, onHome, onLinenLovers, onSearch, active
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Shop over 6,000 products"
+              placeholder="Search the collection"
               className="w-full rounded-md border border-border bg-card py-2.5 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
@@ -180,7 +180,7 @@ export function SiteChrome({ onNavigate, onHome, onLinenLovers, onSearch, active
             aria-current={activeMenu === "linen" ? "page" : undefined}
             className="cursor-pointer rounded-full bg-linen px-3 py-1 text-sm font-semibold uppercase tracking-wide text-linen-foreground transition-colors hover:bg-linen/90"
           >
-            Linen Lovers
+            The Edit Club
           </button>
         </nav>
 
@@ -213,7 +213,7 @@ export function SiteChrome({ onNavigate, onHome, onLinenLovers, onSearch, active
             aria-current={activeMenu === "linen" ? "page" : undefined}
             className="whitespace-nowrap rounded-full bg-linen px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-linen-foreground transition-colors hover:bg-linen/90"
           >
-            Linen Lovers
+            The Edit Club
           </button>
         </nav>
       </div>

@@ -16,7 +16,7 @@ export function Header({ onHome }: { onHome?: () => void }) {
               type="button"
               onClick={onHome}
               className="flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
-              aria-label="Back to Adairs home"
+              aria-label="Back to Aster & Hem home"
             >
               <ChevronLeft className="h-4 w-4" aria-hidden="true" />
               <span className="hidden sm:inline">Shop</span>
@@ -26,18 +26,18 @@ export function Header({ onHome }: { onHome?: () => void }) {
             type="button"
             onClick={onHome}
             className="flex items-center"
-            aria-label="Adairs home"
+            aria-label="Aster & Hem home"
             disabled={!onHome}
           >
-            <span className="font-serif text-[1.75rem] font-medium lowercase leading-none tracking-tight text-foreground">
-              adairs
+            <span className="font-serif text-[1.85rem] font-medium leading-none tracking-tight text-foreground">
+              Aster &amp; Hem
             </span>
           </button>
         </div>
 
         <div className="flex items-center gap-3">
           <span className="hidden rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground sm:inline-block">
-            Room Stylist · ACS Demo
+            Personal Stylist · ACS Demo
           </span>
           <button
             type="button"

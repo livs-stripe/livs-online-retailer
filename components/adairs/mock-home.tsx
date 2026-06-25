@@ -13,31 +13,31 @@ import { formatAud } from "@/lib/format"
 
 const CATEGORY_TILES: { label: string; image: string; dest: ShopDestination }[] = [
   {
-    label: "Shop Quilt Covers",
-    image: "/products/waffle-knit-throw-sand.png",
-    dest: { type: "category", category: "Bed Linen", title: "Quilt Covers & Bed Linen" },
+    label: "Shop Workwear",
+    image: "/images/products/AH-001.jpg",
+    dest: { type: "category", category: "Workwear", title: "Workwear" },
   },
   {
-    label: "Shop Cushions",
-    image: "/products/harlow-linen-cushion-rust.png",
-    dest: { type: "category", category: "Cushions", title: "Cushions" },
+    label: "Shop Weekend",
+    image: "/images/products/AH-002.jpg",
+    dest: { type: "category", category: "Weekend", title: "Weekend" },
   },
   {
-    label: "Shop Rugs",
-    image: "https://www.adairs.com.au/globalassets/13.-ecommerce/03.-product-images/2025_images/furniture/floor-rugs--mats/59957_naturaljut_01.jpg",
-    dest: { type: "category", category: "Rugs and Mats", title: "Rugs & Mats" },
+    label: "Shop Evening",
+    image: "/images/products/AH-004.jpg",
+    dest: { type: "category", category: "Evening", title: "Evening" },
   },
   {
-    label: "Shop Furniture",
-    image: "/products/mango-wood-side-table.png",
-    dest: { type: "category", category: "Furniture", title: "Furniture" },
+    label: "Shop Accessories",
+    image: "/images/products/AH-010.jpg",
+    dest: { type: "category", category: "Accessories", title: "Accessories" },
   },
 ]
 
 const FOOTER_COLUMNS = [
   {
-    title: "Shop With Adairs",
-    links: ["New In", "Bedroom", "Bathroom", "Furniture", "Homewares", "Kids", "Gifts", "Sale", "Linen Lovers", "Adairs Insider"],
+    title: "Shop Aster & Hem",
+    links: ["New In", "Workwear", "Weekend", "Evening", "Accessories", "Sale", "Gift Cards", "The Edit Club"],
   },
   {
     title: "Help",
@@ -47,34 +47,29 @@ const FOOTER_COLUMNS = [
       "Account Login",
       "Store Finder",
       "Shipping & Delivery",
-      "Call & Collect",
       "Click & Collect",
-      "Returns",
+      "Returns & Exchanges",
+      "Size Guide",
       "Gift Cards",
       "Afterpay",
-      "Zip Pay",
     ],
   },
   {
-    title: "About Adairs",
+    title: "About Aster & Hem",
     links: [
-      "About Us",
-      "Our People",
-      "Our Product",
-      "Our Planet",
-      "Adairs News",
-      "Orange Sky",
-      "Qantas",
+      "Our Story",
+      "Sustainability",
+      "Responsible Sourcing",
+      "Journal",
       "Careers",
-      "Corporate Customers",
-      "Investors",
+      "Wholesale",
       "Terms & Conditions",
       "Privacy & Security Policy",
     ],
   },
   {
-    title: "Our Brands",
-    links: ["Mocka", "Focus On Furniture"],
+    title: "Connect",
+    links: ["Instagram", "Pinterest", "TikTok", "Newsletter"],
   },
 ]
 
@@ -106,8 +101,8 @@ export function MockHome({
         <section className="relative">
           <div className="relative h-[420px] w-full overflow-hidden sm:h-[520px]">
             <Image
-              src="/home/hero-bedroom.png"
-              alt="Styled bedroom with layered linen bedding and warm neutral homewares"
+              src="/home/hero-fashion.png"
+              alt="Woman in a tailored bone linen blazer and camel trousers in soft natural light"
               fill
               priority
               sizes="100vw"
@@ -118,19 +113,19 @@ export function MockHome({
               <div className="mx-auto flex w-full max-w-6xl px-4 sm:px-6">
                 <div className="max-w-md text-background">
                   <span className="inline-block rounded-full bg-blush px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blush-foreground">
-                    Mid Year Sale
+                    The Autumn Edit
                   </span>
                   <h1 className="mt-4 text-balance font-serif text-5xl leading-none sm:text-6xl">
-                    Save up to 50%<span className="align-super text-2xl">*</span>
+                    Considered wardrobe, effortlessly worn
                   </h1>
                   <p className="mt-4 text-pretty text-sm leading-relaxed text-background/90">
-                    Refresh every room with our biggest homewares event. Bedding, cushions, throws, rugs and more.
+                    Elevated basics and polished tailoring, designed in Australia to be worn season after season.
                   </p>
                   <Button
-                    onClick={() => onNavigate("Sale")}
+                    onClick={() => onNavigate("New In")}
                     className="mt-6 rounded-full bg-background px-6 text-foreground hover:bg-background/90"
                   >
-                    Shop the sale
+                    Shop new in
                     <ArrowRight className="ml-1.5 h-4 w-4" aria-hidden="true" />
                   </Button>
                 </div>
@@ -170,14 +165,14 @@ export function MockHome({
           </div>
         </section>
 
-        {/* Room Stylist feature */}
+        {/* Personal Stylist feature */}
         <section className="mx-auto max-w-6xl px-4 pb-12 sm:px-6">
           <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
             <div className="grid items-stretch gap-0 md:grid-cols-2">
               <div className="relative min-h-[280px] overflow-hidden bg-secondary">
                 <Image
-                  src="/home/stylist-feature.png"
-                  alt="Curated living room styled with cushions, throw, rug and accents"
+                  src="/home/stylist-fashion.png"
+                  alt="Flat-lay of a curated Aster & Hem edit — knit, leather tote, heels and tailoring"
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
@@ -190,14 +185,14 @@ export function MockHome({
 
               <div className="flex flex-col justify-center gap-5 p-8 sm:p-10">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-accent">Adairs Room Stylist</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-accent">Meet Hem, your personal stylist</p>
                   <h2 className="mt-2 text-balance font-serif text-3xl leading-tight text-foreground sm:text-4xl">
-                    Snap your room. Get a styled look in seconds.
+                    Snap your style. Get a curated edit in seconds.
                   </h2>
                 </div>
                 <p className="text-pretty text-sm leading-relaxed text-muted-foreground">
-                  Upload or photograph your space and our AI stylist reads your room, identifies your style, and curates
-                  a shoppable collection of Adairs pieces — checkout in a tap.
+                  Upload or photograph an outfit, a piece you love, or your wardrobe, and Hem reads your style, finds the
+                  gaps, and curates a shoppable Aster &amp; Hem edit — checkout in a tap.
                 </p>
                 <ul className="flex flex-col gap-2 text-sm text-foreground">
                   <li className="flex items-center gap-2">
@@ -206,7 +201,7 @@ export function MockHome({
                   </li>
                   <li className="flex items-center gap-2">
                     <Wand2 className="h-4 w-4 text-accent" aria-hidden="true" />
-                    AI-curated picks tailored to your space
+                    AI-curated pieces tailored to your style
                   </li>
                 </ul>
                 <div>
@@ -216,7 +211,7 @@ export function MockHome({
                     className="rounded-full bg-accent px-7 text-accent-foreground hover:bg-accent/90"
                   >
                     <Sparkles className="mr-1.5 h-4 w-4" aria-hidden="true" />
-                    Try the Room Stylist
+                    Style me with Hem
                   </Button>
                 </div>
               </div>
@@ -229,7 +224,7 @@ export function MockHome({
           <div className="mb-6 flex items-end justify-between">
             <div>
               <h2 className="font-serif text-2xl text-foreground">Most loved right now</h2>
-              <p className="text-sm text-muted-foreground">Bestselling homewares to refresh your space.</p>
+              <p className="text-sm text-muted-foreground">Bestselling pieces to refresh your wardrobe.</p>
             </div>
             <button
               type="button"
@@ -307,8 +302,8 @@ export function MockHome({
 
           <div className="mt-12 border-t border-border pt-8">
             <p className="text-pretty text-xs leading-relaxed text-muted-foreground">
-              {"\u00A9"} Adairs {new Date().getFullYear()} - Australia&apos;s leading independent retailer for manchester
-              including bedroom, bathroom, homewares, furniture, and kids.
+              {"\u00A9"} Aster &amp; Hem {new Date().getFullYear()} - Contemporary Australian womenswear. Elevated basics
+              and polished tailoring, designed to be worn season after season.
             </p>
           </div>
         </div>

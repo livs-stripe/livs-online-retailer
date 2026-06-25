@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Jost } from "next/font/google"
+import { Jost, Cormorant_Garamond } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
@@ -10,17 +10,17 @@ const jostSans = Jost({
   display: "swap",
 })
 
-const jostDisplay = Jost({
+const cormorantDisplay = Cormorant_Garamond({
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: ["300", "400", "500", "600"],
   variable: "--font-display-custom",
   display: "swap",
 })
 
 export const metadata: Metadata = {
-  title: "Adairs Room Stylist — AI Styling, Instant Checkout",
+  title: "Aster & Hem — AI Personal Stylist, Instant Checkout",
   description:
-    "Upload a photo of your room and let our AI stylist curate a personalised Adairs collection — purchasable in seconds with Stripe's Agentic Commerce Suite.",
+    "Upload a photo and let Hem, our AI personal stylist, curate a personalised Aster & Hem edit — purchasable in seconds with Stripe's Agentic Commerce Suite.",
   generator: "v0.app",
 }
 
@@ -30,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`bg-background ${jostSans.variable} ${jostDisplay.variable}`}>
+    <html lang="en" className={`bg-background ${jostSans.variable} ${cormorantDisplay.variable}`}>
       <body className="font-sans antialiased">
         {children}
         <Toaster />
