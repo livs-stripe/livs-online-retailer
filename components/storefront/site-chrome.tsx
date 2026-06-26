@@ -2,9 +2,10 @@
 
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { MapPin, User, ShoppingBag, Search, Menu, MessageCircle } from "lucide-react"
+import { MapPin, ShoppingBag, Search, Menu, MessageCircle } from "lucide-react"
 import { toast } from "sonner"
 import { useCart } from "./cart-context"
+import { useUser } from "@/contexts/auth-context"
 import { NAV_MENU, type MenuKey } from "@/lib/categories"
 
 interface SiteChromeProps {
@@ -19,6 +20,7 @@ interface SiteChromeProps {
 export function SiteChrome({ onNavigate, onHome, onEditClub, onSearch, onLaunchStylist, activeMenu }: SiteChromeProps) {
   const router = useRouter()
   const { itemCount, openCheckout } = useCart()
+  const { user } = useUser()
   const [query, setQuery] = useState("")
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -119,10 +121,13 @@ export function SiteChrome({ onNavigate, onHome, onEditClub, onSearch, onLaunchS
             <button
               type="button"
               onClick={() => router.push("/edit-club/membership")}
-              className="cursor-pointer flex-col items-center text-[10px] transition-colors hover:text-brand"
-              aria-label="Account and The Edit Club sign in"
+              className="flex cursor-pointer items-center gap-2 transition-colors hover:text-brand"
+              aria-label="Account"
             >
-              <User className="h-5 w-5" aria-hidden="true" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1C1C1C] text-[#F5F0E8] text-xs font-medium">
+                {user.firstName[0]}{user.name.split(' ')[1]?.[0] ?? ''}
+              </div>
+              <span className="hidden text-sm text-[#1C1C1C] sm:inline">{user.firstName}</span>
             </button>
             <button
               type="button"

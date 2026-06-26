@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
-import { useChat } from "@ai-sdk/react"
+import { useEffect, useMemo, useRef, useState, useCallback } from "react"
+import { useChat, type UIMessage } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
 import { Sparkles, Send, X, MessageCircle, Plus, Check, ShoppingBag, ShieldCheck, Camera } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -11,6 +11,35 @@ import { ProductImage } from "./product-image"
 import { AgentCheckoutPanel } from "./agent-checkout-panel"
 import { useCart } from "./cart-context"
 import type { AgentOrder, Product } from "@/lib/types"
+
+const CHAT_STORAGE_KEY = 'hem-chat-messages'
+const DEMO_STATE_KEY = 'hem-demo-state'
+
+function loadPersistedMessages(): UIMessage[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = sessionStorage.getItem(CHAT_STORAGE_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch { return [] }
+}
+
+function persistMessages(messages: UIMessage[]) {
+  if (typeof window === 'undefined') return
+  try { sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages)) } catch {}
+}
+
+function loadDemoState() {
+  if (typeof window === 'undefined') return null
+  try {
+    const stored = sessionStorage.getItem(DEMO_STATE_KEY)
+    return stored ? JSON.parse(stored) : null
+  } catch { return null }
+}
+
+function persistDemoState(state: Record<string, unknown>) {
+  if (typeof window === 'undefined') return
+  try { sessionStorage.setItem(DEMO_STATE_KEY, JSON.stringify(state)) } catch {}
+}
 
 // Render the lightweight markdown the model emits (**bold** / *italic*) as real
 // formatting instead of leaking raw asterisks into the chat bubble.
@@ -102,20 +131,51 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [lastOrder, setLastOrder] = useState<AgentOrder | null>(null)
   const [photoUploading, setPhotoUploading] = useState(false)
-  const [visionResult, setVisionResult] = useState<VisionResult | null>(null)
+  const [visionResult, setVisionResult] = useState<VisionResult | null>(() => {
+    const saved = loadDemoState()
+    return saved?.visionResult ?? null
+  })
   // Demo flow state
   const [demoPurchases, setDemoPurchases] = useState<DemoPurchase[]>([])
-  const [demoMode, setDemoMode] = useState(false)
-  const [demoStep, setDemoStep] = useState(0)
-  const [demoMessages, setDemoMessages] = useState<DemoMessage[]>([])
-  const [showUploadPrompt, setShowUploadPrompt] = useState(false)
-  const [postPurchaseMsg, setPostPurchaseMsg] = useState(false)
+  const [demoMode, setDemoMode] = useState(() => {
+    const saved = loadDemoState()
+    return saved?.demoMode ?? false
+  })
+  const [demoStep, setDemoStep] = useState(() => {
+    const saved = loadDemoState()
+    return saved?.demoStep ?? 0
+  })
+  const [demoMessages, setDemoMessages] = useState<DemoMessage[]>(() => {
+    const saved = loadDemoState()
+    return saved?.demoMessages ?? []
+  })
+  const [showUploadPrompt, setShowUploadPrompt] = useState(() => {
+    const saved = loadDemoState()
+    return saved?.showUploadPrompt ?? false
+  })
+  const [postPurchaseMsg, setPostPurchaseMsg] = useState(() => {
+    const saved = loadDemoState()
+    return saved?.postPurchaseMsg ?? false
+  })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  const [initialMessages] = useState<UIMessage[]>(() => loadPersistedMessages())
+
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({ api: "/api/stylist-chat" }),
+    initialMessages: initialMessages.length > 0 ? initialMessages : undefined,
   })
+
+  // Persist AI chat messages to sessionStorage
+  useEffect(() => {
+    if (messages.length > 0) persistMessages(messages)
+  }, [messages])
+
+  // Persist demo state to sessionStorage
+  useEffect(() => {
+    persistDemoState({ demoMode, demoStep, demoMessages, showUploadPrompt, postPurchaseMsg, visionResult })
+  }, [demoMode, demoStep, demoMessages, showUploadPrompt, postPurchaseMsg, visionResult])
 
   // The storefront cart. Items the shopper adds in chat are mirrored here so the
   // chat selection and the main cart stay in sync. (On the standalone membership
@@ -304,6 +364,23 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
     addToCart(sku, 1)
   }
 
+  const clearChatHistory = useCallback(() => {
+    try {
+      sessionStorage.removeItem(CHAT_STORAGE_KEY)
+      sessionStorage.removeItem(DEMO_STATE_KEY)
+    } catch {}
+    setDemoMode(false)
+    setDemoStep(0)
+    setDemoMessages([])
+    setVisionResult(null)
+    setShowUploadPrompt(false)
+    setPostPurchaseMsg(false)
+    setLastOrder(null)
+    window.location.reload()
+  }, [])
+
+  const hasRestoredSession = initialMessages.length > 0
+
   function onOrderComplete(order: AgentOrder) {
     setLastOrder(order)
     // These items were just paid for in-chat, so drop them from the main cart
@@ -373,7 +450,12 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
 
           {/* Messages */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4">
-            {messages.length === 0 && !demoMode ? (
+            {hasRestoredSession && (
+              <div className="text-xs text-center text-[#C4714A] py-2 mb-3 border-b border-[#E8E3DA]">
+                Continuing your conversation from earlier this session
+              </div>
+            )}
+            {messages.length === 0 && !demoMode && !hasRestoredSession ? (
               <div className="flex flex-col gap-3">
                 <div className="flex items-start gap-2">
                   <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#1C1C1C] text-[#F5F0E8] font-serif text-xs font-semibold">
@@ -385,7 +467,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                       Hem
                     </span>
                     {demoPurchases.length > 0 ? (
-                      <p>Hi Sophie — welcome back to Aster &amp; Hem.</p>
+                      <p>Hi Amy — welcome back to Aster &amp; Hem.</p>
                     ) : isMember ? (
                       <p>
                         Welcome back, {memberName ?? "there"}. Ask me anything about style inspiration or your
@@ -443,7 +525,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                         <Sparkles className="h-3 w-3" aria-hidden="true" />
                         Hem
                       </span>
-                      <p>Hi Sophie — welcome back to Aster &amp; Hem.</p>
+                      <p>Hi Amy — welcome back to Aster &amp; Hem.</p>
                     </div>
                     {demoPurchases.length > 0 && (
                       <div className="w-full flex flex-col gap-2">
@@ -746,7 +828,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                         <Sparkles className="h-3 w-3" aria-hidden="true" />
                         Hem
                       </span>
-                      <p>You&apos;re all set, Sophie. It&apos;ll be with you soon. Want to see what pairs with it?</p>
+                      <p>You&apos;re all set, Amy. It&apos;ll be with you soon. Want to see what pairs with it?</p>
                     </div>
                   </li>
                 )}
@@ -777,8 +859,9 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
               e.preventDefault()
               submit(input)
             }}
-            className="flex items-center gap-2 border-t border-border p-3"
+            className="flex flex-col gap-1.5 border-t border-border p-3"
           >
+            <div className="flex items-center gap-2">
             <input
               type="file"
               ref={fileInputRef}
@@ -812,6 +895,16 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
             >
               <Send className="h-4 w-4" aria-hidden="true" />
             </button>
+            </div>
+            {(messages.length > 0 || demoMode) && (
+              <button
+                type="button"
+                onClick={clearChatHistory}
+                className="self-center text-xs text-[#C4714A] underline opacity-50 hover:opacity-100 transition-opacity"
+              >
+                Start new conversation
+              </button>
+            )}
           </form>
         </div>
       )}
