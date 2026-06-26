@@ -179,7 +179,7 @@ export async function POST(req: NextRequest) {
     const intent = await stripe.paymentIntents.create({
       amount: amountCents,
       currency: "usd",
-      payment_method_types: ["card"],
+      automatic_payment_methods: { enabled: true },
       description: `Aster & Hem Stylist — ${itemCount} item${itemCount === 1 ? "" : "s"}`,
       customer: customerId,
       metadata,

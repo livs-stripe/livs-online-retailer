@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
-import type { Appearance } from "@stripe/stripe-js"
+import { Elements, PaymentElement, ExpressCheckoutElement, useElements, useStripe } from "@stripe/react-stripe-js"
+import type { Appearance, StripeExpressCheckoutElementConfirmEvent } from "@stripe/stripe-js"
 import { Sparkles, Check, Loader2, Lock, Truck, Store, ChevronLeft, ShieldCheck, BadgePercent } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -481,14 +481,52 @@ function PaymentForm({
     onPaying(false)
   }
 
+  async function handleExpressConfirm(event: StripeExpressCheckoutElementConfirmEvent) {
+    if (!stripe || !elements) return
+    const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/order-confirmation`,
+      },
+      redirect: "if_required",
+    })
+    if (confirmError) {
+      event.paymentFailed({ reason: "fail" })
+      setError(confirmError.message ?? "Payment failed.")
+      return
+    }
+    if (paymentIntent && (paymentIntent.status === "succeeded" || paymentIntent.status === "processing")) {
+      const label = typeof paymentIntent.payment_method === "string" ? "wallet" : "Apple Pay / Google Pay"
+      onPaid(paymentIntent.id, label)
+    }
+  }
+
   return (
-    <div>
-      {/* Pure inline card form. No LinkAuthenticationElement: a known Link email
-          would trigger Link's hosted verification window, which can't render in
-          our cross-origin iframe and gets pushed out to a new tab. Card details
-          are entered directly in chat instead. */}
+    <div className="space-y-3">
+      {/* Express wallets — Apple Pay / Google Pay / Link */}
+      <ExpressCheckoutElement
+        onConfirm={handleExpressConfirm}
+        options={{
+          buttonType: { applePay: "buy", googlePay: "buy" },
+          buttonTheme: { applePay: "black", googlePay: "black" },
+          layout: { maxColumns: 1, maxRows: 3, overflow: "never" },
+          paymentMethods: { applePay: "always", googlePay: "always", link: "auto" },
+        }}
+      />
+
+      {/* Divider */}
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground/50">or</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      {/* Card form */}
       <PaymentElement
-        options={{ layout: "tabs", wallets: { applePay: "auto", googlePay: "auto" } }}
+        options={{
+          layout: "accordion",
+          wallets: { applePay: "never", googlePay: "never" },
+        }}
         onReady={() => setReady(true)}
       />
       {error && (
