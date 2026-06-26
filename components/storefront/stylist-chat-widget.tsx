@@ -365,7 +365,11 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
       formData.append("image", imageFile)
       formData.append("prompt", userText)
       const res = await fetch("/api/style-me", { method: "POST", body: formData })
-      if (!res.ok) throw new Error(`Try-on failed: ${res.status}`)
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}))
+        console.error("[style-me] Error:", res.status, errBody)
+        throw new Error(errBody?.error || `Try-on failed: ${res.status}`)
+      }
       const data: TryOnResult = await res.json()
       setTryOnResult(data)
     } catch {

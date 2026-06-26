@@ -41,9 +41,14 @@ Request: "${userPrompt}"`,
 
     let matched: { sku: string; name: string; colour: string; price: number }
     try {
-      matched = JSON.parse(matchRes.text.trim())
+      let raw = matchRes.text.trim()
+      // Strip markdown fences if present
+      const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/)
+      if (fenceMatch) raw = fenceMatch[1].trim()
+      matched = JSON.parse(raw)
     } catch {
-      return Response.json({ error: 'Could not identify a product from that request' }, { status: 400 })
+      console.error('[style-me] Match response not valid JSON:', matchRes.text)
+      return Response.json({ error: 'Could not identify a product from that request', raw: matchRes.text }, { status: 400 })
     }
 
     const product = PRODUCTS.find(p => p.sku === matched.sku)
