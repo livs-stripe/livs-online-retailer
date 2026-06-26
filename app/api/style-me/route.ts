@@ -1,12 +1,16 @@
-import OpenAI, { toFile } from 'openai'
+import { createOpenAI } from '@ai-sdk/openai'
+import { generateText } from 'ai'
 import { PRODUCTS } from '@/lib/products'
 import { NextRequest } from 'next/server'
 
 export const maxDuration = 60
 
-export async function POST(req: NextRequest) {
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const gateway = createOpenAI({
+  baseURL: 'https://ai-gateway.vercel.sh/v1',
+  apiKey: process.env.VERCEL_OIDC_TOKEN ?? '',
+})
 
+export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
     const imageFile = formData.get('image') as File
@@ -16,17 +20,16 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: 'Image and prompt required' }, { status: 400 })
     }
 
-    const userBuffer = await imageFile.arrayBuffer()
-    const userBase64 = Buffer.from(userBuffer).toString('base64')
+    const userBuffer = Buffer.from(await imageFile.arrayBuffer())
+    const userBase64 = userBuffer.toString('base64')
+    const userMime = imageFile.type || 'image/jpeg'
 
-    const matchRes = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'system',
-          content: `You match user requests to Aster & Hem products.
-Return ONLY raw JSON — no markdown, no explanation:
+    const matchRes = await generateText({
+      model: gateway('openai/gpt-4o-mini'),
+      prompt: `Match this request to an Aster & Hem product.
+Return ONLY raw JSON, no markdown:
 { "sku": "AH-XXX", "name": "...", "colour": "...", "price": 000 }
+
 Inventory:
 ${JSON.stringify(
   PRODUCTS.map(p => ({
@@ -36,16 +39,15 @@ ${JSON.stringify(
     category: p.category,
     subcategory: p.subcategory,
   }))
-)}`,
-        },
-        { role: 'user', content: userPrompt },
-      ],
-      max_tokens: 80,
+)}
+
+Request: "${userPrompt}"`,
+      maxTokens: 80,
     })
 
     let matched: { sku: string; name: string; colour: string; price: number }
     try {
-      matched = JSON.parse(matchRes.choices[0].message.content ?? '{}')
+      matched = JSON.parse(matchRes.text.trim())
     } catch {
       return Response.json({ error: 'Could not identify a product from that request' }, { status: 400 })
     }
@@ -59,75 +61,100 @@ ${JSON.stringify(
     const garmentRes = await fetch(`${baseUrl}${product.image}`)
 
     if (!garmentRes.ok) {
-      console.error(`[style-me] Garment image fetch failed: ${baseUrl}${product.image} → ${garmentRes.status}`)
-      return Response.json(
-        { error: `Could not load product image for ${product.sku}` },
-        { status: 500 }
-      )
+      console.error(`[style-me] Garment fetch failed: ${baseUrl}${product.image} → ${garmentRes.status}`)
+      return Response.json({ error: `Could not load product image for ${product.sku}` }, { status: 500 })
     }
 
-    const garmentBuffer = await garmentRes.arrayBuffer()
+    const garmentBase64 = Buffer.from(await garmentRes.arrayBuffer()).toString('base64')
 
-    const personFile = await toFile(
-      Buffer.from(userBase64, 'base64'),
-      'person.png',
-      { type: 'image/png' }
-    )
-
-    const garmentFile = await toFile(
-      Buffer.from(garmentBuffer),
-      'garment.png',
-      { type: 'image/png' }
-    )
-
-    const editResponse = await openai.images.edit({
-      model: 'gpt-image-1',
-      image: [personFile, garmentFile],
-      prompt: `Virtual clothing try-on.
-The first image shows a person. The second image shows a garment: ${product.name} in ${product.colour}.
-Place the garment from the second image onto the person in the first image.
-Preserve exactly: the person's face, hair colour and style, skin tone, body position, pose, and background.
-Change only: the clothing — replace what they are currently wearing with the ${product.name}.
-The result must look like a natural, photorealistic photograph of the same person wearing the new garment.
-Do not alter their face, identity, or any non-clothing part of the image.`,
-      n: 1,
-      size: '1024x1536',
-    })
-
-    const imageData = editResponse.data[0]
-    const tryOnImageUrl =
-      imageData.url ??
-      (imageData.b64_json
-        ? `data:image/png;base64,${imageData.b64_json}`
-        : null)
-
-    if (!tryOnImageUrl) {
-      return Response.json({ error: 'OpenAI returned no image' }, { status: 500 })
-    }
-
-    const captionRes = await openai.chat.completions.create({
-      model: 'gpt-4o',
+    const geminiResult = await generateText({
+      model: gateway('google/gemini-3.1-flash-image-preview'),
       messages: [
         {
-          role: 'system',
-          content: `You are Hem, the AI stylist for Aster & Hem — a contemporary Australian
-womenswear brand. You've just shown the user a virtual try-on of a specific product.
-Write exactly 1–2 sentences: warm, direct, specific to this item.
-Tell her how to wear it or why it works for her. Sound like a stylist, not a product description.
-Do not describe what's visible in the image.`,
-        },
-        {
           role: 'user',
-          content: `Product: ${product.name} in ${product.colour} (A$${product.price}).
-Category: ${product.category} / ${product.subcategory}.
-User's request was: "${userPrompt}"`,
+          content: [
+            {
+              type: 'text',
+              text: `Virtual clothing try-on.
+
+Image 1 (first image): the person
+Image 2 (second image): the garment — ${product.name} in ${product.colour}
+
+Generate a photorealistic image of the SAME person from Image 1 wearing the garment from Image 2.
+
+Rules:
+- Preserve EXACTLY: face, hair, skin tone, body pose, background, lighting
+- Change ONLY: the clothing
+- Result must look like a natural photograph, not a composited image
+- Do not alter the person's identity or any non-clothing element`,
+            },
+            {
+              type: 'image',
+              image: userBuffer,
+              mimeType: userMime as 'image/jpeg' | 'image/png' | 'image/webp',
+            },
+            {
+              type: 'image',
+              image: Buffer.from(garmentBase64, 'base64'),
+              mimeType: 'image/jpeg',
+            },
+          ],
         },
       ],
-      max_tokens: 80,
+      providerOptions: {
+        google: {
+          responseModalities: ['TEXT', 'IMAGE'],
+        },
+        openai: {
+          responseModalities: ['text', 'image'],
+        },
+      },
     })
 
-    const caption =
-      captionRes.choices[0].message.content ??
+    let tryOnImageUrl: string | null = null
+
+    if ((geminiResult as any).files?.length) {
+      const imgFile = (geminiResult as any).files.find((f: any) => f.mimeType?.startsWith('image/'))
+      if (imgFile?.base64) {
+        tryOnImageUrl = `data:${imgFile.mimeType};base64,${imgFile.base64}`
+      }
+    }
+
+    if (!tryOnImageUrl) {
+      for (const part of (geminiResult as any).content ?? []) {
+        if (
+          (part.type === 'file' || part.type === 'image') &&
+          'data' in part &&
+          typeof part.data === 'string'
+        ) {
+          const mime = ('mediaType' in part ? part.mediaType : 'image/png') ?? 'image/png'
+          tryOnImageUrl = `data:${mime};base64,${part.data}`
+          break
+        }
+      }
+    }
+
+    if (!tryOnImageUrl) {
+      console.error('[style-me] No image in Gemini response. Content:', JSON.stringify((geminiResult as any).content?.slice(0, 2)))
+      console.error('[style-me] Files:', JSON.stringify((geminiResult as any).files))
+      return Response.json({
+        error: 'Gemini returned no image. The model may not support image generation through this gateway configuration.'
+      }, { status: 500 })
+    }
+
+    const captionRes = await generateText({
+      model: gateway('openai/gpt-4o-mini'),
+      prompt: `You are Hem, AI stylist for Aster & Hem — contemporary Australian womenswear.
+The customer just saw a virtual try-on of: ${product.name} in ${product.colour} (A$${product.price}).
+Category: ${product.category}.
+Their request: "${userPrompt}"
+
+Write exactly 1–2 warm sentences: specific to this product, how to style it or why it works.
+Sound like a stylist, not a product description. No more than 2 sentences.`,
+      maxTokens: 80,
+    })
+
+    const caption = captionRes.text.trim() ||
       `That's the ${product.name} in ${product.colour} — A$${product.price}.`
 
     return Response.json({
