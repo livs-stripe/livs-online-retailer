@@ -1,4 +1,4 @@
-import OpenAI from 'openai'
+import OpenAI, { toFile } from 'openai'
 import { PRODUCTS } from '@/lib/products'
 import { NextRequest } from 'next/server'
 
@@ -68,14 +68,14 @@ ${JSON.stringify(
 
     const garmentBuffer = await garmentRes.arrayBuffer()
 
-    const personFile = new File(
-      [Buffer.from(userBase64, 'base64')],
+    const personFile = await toFile(
+      Buffer.from(userBase64, 'base64'),
       'person.png',
       { type: 'image/png' }
     )
 
-    const garmentFile = new File(
-      [garmentBuffer],
+    const garmentFile = await toFile(
+      Buffer.from(garmentBuffer),
       'garment.png',
       { type: 'image/png' }
     )
