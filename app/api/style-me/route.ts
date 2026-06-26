@@ -1,6 +1,8 @@
 import { generateText, generateImage } from 'ai'
 import { PRODUCTS } from '@/lib/products'
 import { NextRequest } from 'next/server'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 
 export const maxDuration = 60
 
@@ -56,16 +58,15 @@ Request: "${userPrompt}"`,
       return Response.json({ error: 'Product not found in inventory' }, { status: 404 })
     }
 
-    // Step 2: Fetch the garment product image
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
-    const garmentRes = await fetch(`${baseUrl}${product.image}`)
-
-    if (!garmentRes.ok) {
-      console.error(`[style-me] Garment fetch failed: ${baseUrl}${product.image} → ${garmentRes.status}`)
+    // Step 2: Read the garment product image from filesystem (avoids circular fetch on Vercel)
+    let garmentBuffer: Buffer
+    try {
+      const imagePath = join(process.cwd(), 'public', product.image)
+      garmentBuffer = readFileSync(imagePath)
+    } catch (fsErr) {
+      console.error(`[style-me] Could not read product image: public${product.image}`, fsErr)
       return Response.json({ error: `Could not load product image for ${product.sku}` }, { status: 500 })
     }
-
-    const garmentBuffer = Buffer.from(await garmentRes.arrayBuffer())
 
     // Step 3: Virtual try-on using gpt-image-1 via AI SDK (routed through Vercel AI Gateway)
     const imageResult = await generateImage({
