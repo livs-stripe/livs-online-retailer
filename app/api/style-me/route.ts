@@ -23,8 +23,7 @@ export async function POST(req: NextRequest) {
     const matchRes = await generateText({
       model: "openai/gpt-4o-mini",
       prompt: `Match this request to an Aster & Hem product.
-Return ONLY raw JSON, no markdown:
-{ "sku": "AH-XXX", "name": "...", "colour": "...", "price": 000 }
+Return ONLY the SKU code (e.g. AH-001). Nothing else.
 
 Inventory:
 ${JSON.stringify(
@@ -38,22 +37,16 @@ ${JSON.stringify(
 )}
 
 Request: "${userPrompt}"`,
-      maxTokens: 80,
+      maxTokens: 20,
     })
 
-    let matched: { sku: string; name: string; colour: string; price: number }
-    try {
-      let raw = matchRes.text.trim()
-      // Strip markdown fences if present
-      const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/)
-      if (fenceMatch) raw = fenceMatch[1].trim()
-      matched = JSON.parse(raw)
-    } catch {
-      console.error('[style-me] Match response not valid JSON:', matchRes.text)
-      return Response.json({ error: 'Could not identify a product from that request', raw: matchRes.text }, { status: 400 })
+    const skuMatch = matchRes.text.trim().match(/AH-\d{3}/)
+    if (!skuMatch) {
+      console.error('[style-me] Could not extract SKU from:', matchRes.text)
+      return Response.json({ error: 'Could not identify a product from that request' }, { status: 400 })
     }
 
-    const product = PRODUCTS.find(p => p.sku === matched.sku)
+    const product = PRODUCTS.find(p => p.sku === skuMatch[0])
     if (!product) {
       return Response.json({ error: 'Product not found in inventory' }, { status: 404 })
     }
@@ -68,12 +61,14 @@ Request: "${userPrompt}"`,
       return Response.json({ error: `Could not load product image for ${product.sku}` }, { status: 500 })
     }
 
-    // Step 3: Virtual try-on using gpt-image-1 via AI SDK (routed through Vercel AI Gateway)
-    const imageResult = await generateImage({
-      model: "openai/gpt-image-1",
-      prompt: {
-        images: [userBuffer, garmentBuffer],
-        text: `Virtual clothing try-on. The first image is a person. The second image is a garment: ${product.name} in ${product.colour}.
+    // Step 3: Virtual try-on using gpt-image-1 via AI SDK
+    let tryOnImageUrl: string
+    try {
+      const imageResult = await generateImage({
+        model: "openai/gpt-image-1",
+        prompt: {
+          images: [userBuffer, garmentBuffer],
+          text: `Virtual clothing try-on. The first image is a person. The second image is a garment: ${product.name} in ${product.colour}.
 
 Generate a photorealistic image of the SAME person from the first image wearing the garment from the second image.
 
@@ -82,11 +77,15 @@ Rules:
 - Change ONLY: the clothing to show them wearing the garment
 - Result must look like a natural photograph, not a composite
 - Do not alter the person's identity or any non-clothing element`,
-      },
-      size: '1024x1024',
-    })
-
-    const tryOnImageUrl = `data:image/png;base64,${imageResult.image.base64}`
+        },
+        size: '1024x1024',
+      })
+      tryOnImageUrl = `data:image/png;base64,${imageResult.image.base64}`
+    } catch (imgErr: unknown) {
+      const msg = imgErr instanceof Error ? imgErr.message : String(imgErr)
+      console.error('[style-me] Image generation failed:', msg)
+      return Response.json({ error: `Image generation failed: ${msg}` }, { status: 500 })
+    }
 
     // Step 4: Generate a stylist caption
     const captionRes = await generateText({
