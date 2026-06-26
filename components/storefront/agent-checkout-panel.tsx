@@ -441,6 +441,7 @@ function PaymentForm({
   const elements = useElements()
   const [error, setError] = useState<string | null>(null)
   const [ready, setReady] = useState(false)
+  const [expressAvailable, setExpressAvailable] = useState(false)
 
   async function handlePay() {
     if (!stripe || !elements) return
@@ -503,9 +504,13 @@ function PaymentForm({
 
   return (
     <div className="space-y-3">
-      {/* Express wallets — Apple Pay / Google Pay / Link */}
+      {/* Express wallets — Apple Pay / Google Pay / Link.
+          Renders nothing if no wallet is available on this device/browser. */}
       <ExpressCheckoutElement
         onConfirm={handleExpressConfirm}
+        onReady={({ availablePaymentMethods }) => {
+          if (availablePaymentMethods) setExpressAvailable(true)
+        }}
         options={{
           buttonType: { applePay: "buy", googlePay: "buy" },
           buttonTheme: { applePay: "black", googlePay: "black" },
@@ -514,12 +519,14 @@ function PaymentForm({
         }}
       />
 
-      {/* Divider */}
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground/50">or</span>
-        <div className="h-px flex-1 bg-border" />
-      </div>
+      {/* Divider — only shown when express buttons rendered above */}
+      {expressAvailable && (
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground/50">or</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+      )}
 
       {/* Card form */}
       <PaymentElement
