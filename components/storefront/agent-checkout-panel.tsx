@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Elements, PaymentElement, ExpressCheckoutElement, useElements, useStripe } from "@stripe/react-stripe-js"
+import { Elements, PaymentElement, ExpressCheckoutElement, AddressElement, useElements, useStripe } from "@stripe/react-stripe-js"
 import type { Appearance, StripeExpressCheckoutElementConfirmEvent } from "@stripe/stripe-js"
 import { Sparkles, Check, Loader2, Lock, Truck, Store, ChevronLeft, ShieldCheck, BadgePercent } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -527,6 +527,20 @@ function PaymentForm({
           <div className="h-px flex-1 bg-border" />
         </div>
       )}
+
+      {/* Shipping address */}
+      <div>
+        <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Delivery address</p>
+        <AddressElement
+          options={{
+            mode: "shipping",
+            defaultValues: {
+              name: "Amy Zobec",
+              address: { country: "AU" },
+            },
+          }}
+        />
+      </div>
 
       {/* Card form */}
       <PaymentElement
