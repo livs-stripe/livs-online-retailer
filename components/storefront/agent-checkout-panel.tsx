@@ -514,7 +514,7 @@ function PaymentForm({
         options={{
           buttonType: { applePay: "buy", googlePay: "buy" },
           buttonTheme: { applePay: "black", googlePay: "black" },
-          layout: { maxColumns: 1, maxRows: 3, overflow: "never" },
+          layout: { maxColumns: 1, maxRows: 3, overflow: "auto" },
           paymentMethods: { applePay: "always", googlePay: "always", link: "auto" },
         }}
       />

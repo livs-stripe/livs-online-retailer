@@ -1,14 +1,8 @@
-import { createOpenAI } from '@ai-sdk/openai'
-import { generateText } from 'ai'
+import { generateText, generateImage } from 'ai'
 import { PRODUCTS } from '@/lib/products'
 import { NextRequest } from 'next/server'
 
 export const maxDuration = 60
-
-const gateway = createOpenAI({
-  baseURL: 'https://ai-gateway.vercel.sh/v1',
-  apiKey: process.env.VERCEL_OIDC_TOKEN ?? '',
-})
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,11 +15,11 @@ export async function POST(req: NextRequest) {
     }
 
     const userBuffer = Buffer.from(await imageFile.arrayBuffer())
-    const userBase64 = userBuffer.toString('base64')
     const userMime = imageFile.type || 'image/jpeg'
 
+    // Step 1: Match the user's request to an inventory item
     const matchRes = await generateText({
-      model: gateway('openai/gpt-4o-mini'),
+      model: "openai/gpt-4o-mini",
       prompt: `Match this request to an Aster & Hem product.
 Return ONLY raw JSON, no markdown:
 { "sku": "AH-XXX", "name": "...", "colour": "...", "price": 000 }
@@ -57,7 +51,8 @@ Request: "${userPrompt}"`,
       return Response.json({ error: 'Product not found in inventory' }, { status: 404 })
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
+    // Step 2: Fetch the garment product image
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
     const garmentRes = await fetch(`${baseUrl}${product.image}`)
 
     if (!garmentRes.ok) {
@@ -65,85 +60,31 @@ Request: "${userPrompt}"`,
       return Response.json({ error: `Could not load product image for ${product.sku}` }, { status: 500 })
     }
 
-    const garmentBase64 = Buffer.from(await garmentRes.arrayBuffer()).toString('base64')
+    const garmentBuffer = Buffer.from(await garmentRes.arrayBuffer())
 
-    const geminiResult = await generateText({
-      model: gateway('google/gemini-3.1-flash-image-preview'),
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: `Virtual clothing try-on.
+    // Step 3: Virtual try-on using gpt-image-1 via AI SDK (routed through Vercel AI Gateway)
+    const imageResult = await generateImage({
+      model: "openai/gpt-image-1",
+      prompt: {
+        images: [userBuffer, garmentBuffer],
+        text: `Virtual clothing try-on. The first image is a person. The second image is a garment: ${product.name} in ${product.colour}.
 
-Image 1 (first image): the person
-Image 2 (second image): the garment — ${product.name} in ${product.colour}
-
-Generate a photorealistic image of the SAME person from Image 1 wearing the garment from Image 2.
+Generate a photorealistic image of the SAME person from the first image wearing the garment from the second image.
 
 Rules:
 - Preserve EXACTLY: face, hair, skin tone, body pose, background, lighting
-- Change ONLY: the clothing
-- Result must look like a natural photograph, not a composited image
+- Change ONLY: the clothing to show them wearing the garment
+- Result must look like a natural photograph, not a composite
 - Do not alter the person's identity or any non-clothing element`,
-            },
-            {
-              type: 'image',
-              image: userBuffer,
-              mimeType: userMime as 'image/jpeg' | 'image/png' | 'image/webp',
-            },
-            {
-              type: 'image',
-              image: Buffer.from(garmentBase64, 'base64'),
-              mimeType: 'image/jpeg',
-            },
-          ],
-        },
-      ],
-      providerOptions: {
-        google: {
-          responseModalities: ['TEXT', 'IMAGE'],
-        },
-        openai: {
-          responseModalities: ['text', 'image'],
-        },
       },
+      size: '1024x1024',
     })
 
-    let tryOnImageUrl: string | null = null
+    const tryOnImageUrl = `data:image/png;base64,${imageResult.image.base64}`
 
-    if ((geminiResult as any).files?.length) {
-      const imgFile = (geminiResult as any).files.find((f: any) => f.mimeType?.startsWith('image/'))
-      if (imgFile?.base64) {
-        tryOnImageUrl = `data:${imgFile.mimeType};base64,${imgFile.base64}`
-      }
-    }
-
-    if (!tryOnImageUrl) {
-      for (const part of (geminiResult as any).content ?? []) {
-        if (
-          (part.type === 'file' || part.type === 'image') &&
-          'data' in part &&
-          typeof part.data === 'string'
-        ) {
-          const mime = ('mediaType' in part ? part.mediaType : 'image/png') ?? 'image/png'
-          tryOnImageUrl = `data:${mime};base64,${part.data}`
-          break
-        }
-      }
-    }
-
-    if (!tryOnImageUrl) {
-      console.error('[style-me] No image in Gemini response. Content:', JSON.stringify((geminiResult as any).content?.slice(0, 2)))
-      console.error('[style-me] Files:', JSON.stringify((geminiResult as any).files))
-      return Response.json({
-        error: 'Gemini returned no image. The model may not support image generation through this gateway configuration.'
-      }, { status: 500 })
-    }
-
+    // Step 4: Generate a stylist caption
     const captionRes = await generateText({
-      model: gateway('openai/gpt-4o-mini'),
+      model: "openai/gpt-4o-mini",
       prompt: `You are Hem, AI stylist for Aster & Hem — contemporary Australian womenswear.
 The customer just saw a virtual try-on of: ${product.name} in ${product.colour} (A$${product.price}).
 Category: ${product.category}.
