@@ -91,6 +91,8 @@ const searchCatalogTool = tool({
         name: p.name,
         variant: p.variant,
         category: p.category,
+        subcategory: p.subcategory,
+        sizes: p.sizes,
         price: p.price,
         image: p.image,
         url: p.url,

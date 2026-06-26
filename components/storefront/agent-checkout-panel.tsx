@@ -11,6 +11,8 @@ import { formatUsd } from "@/lib/format"
 import { computeAgentPrice, isValidLinenNumber, STANDARD_SHIPPING, FREE_SHIP_THRESHOLD_MEMBER } from "@/lib/shipping"
 import { LS_CUSTOMER_ID } from "@/lib/membership"
 import { DEMO_MEMBERSHIP } from "@/lib/demo-membership"
+import { requiresSize } from "@/lib/sizing"
+import { SizeSelector } from "./size-selector"
 import { getStripePromise } from "@/lib/stripe-client"
 import type { AgentOrder, Product } from "@/lib/types"
 
@@ -50,6 +52,20 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
   const [memberResolved, setMemberResolved] = useState(false)
   // Customer session secret that lets the Payment Element show saved methods.
   const [customerSessionSecret, setCustomerSessionSecret] = useState<string | null>(null)
+  // Size selection state — keyed by product id
+  const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {}
+    for (const p of products) {
+      if ((p as Product & { selectedSize?: string }).selectedSize) {
+        initial[p.id] = (p as Product & { selectedSize?: string }).selectedSize!
+      }
+    }
+    return initial
+  })
+
+  // Check if all products that require sizes have one selected
+  const allSizesConfirmed = products.every(p => !requiresSize(p) || selectedSizes[p.id])
+  const productsNeedingSize = products.filter(p => requiresSize(p))
 
   const isMember = appliedLinen !== null
 
@@ -197,12 +213,33 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
               {products.length === 1 ? products[0].name : "Your curated look"}
             </p>
             <p className="text-xs text-muted-foreground">
-              {products.length === 1 ? "single piece" : `${products.length} pieces`} · your Stylist&apos;s pick
+              {products.length === 1
+                ? `${products[0].variant ?? products[0].colour ?? ''}${selectedSizes[products[0].id] ? ` · Size ${selectedSizes[products[0].id]}` : ''}`
+                : `${products.length} pieces · your Stylist's pick`}
               {budget !== null && total <= budget ? ` · within your ${formatUsd(budget)} budget` : ""}
             </p>
           </div>
           <span className="shrink-0 font-serif text-xl text-foreground">{formatUsd(total)}</span>
         </div>
+
+        {/* Size selector — only for products that need sizing */}
+        {productsNeedingSize.length > 0 && (
+          <div className={cn("mt-4 rounded-xl border p-3 transition-colors", allSizesConfirmed ? "border-border bg-background" : "border-accent/30 bg-accent/5")}>
+            {productsNeedingSize.map(p => (
+              <div key={p.id} className={productsNeedingSize.length > 1 ? "mb-3 last:mb-0" : ""}>
+                {productsNeedingSize.length > 1 && (
+                  <p className="mb-1.5 text-xs font-medium text-foreground">{p.name}</p>
+                )}
+                <SizeSelector
+                  product={p}
+                  selectedSize={selectedSizes[p.id] ?? null}
+                  onSelect={(size) => setSelectedSizes(prev => ({ ...prev, [p.id]: size }))}
+                  variant="checkout"
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Fulfilment: deliver or collect in store */}
         <div className="mt-4">
@@ -343,7 +380,13 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
         <div className="mt-5">
           <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Payment</p>
           <div className="mt-2">
-            {initializing ? (
+            {!allSizesConfirmed ? (
+              <div className="rounded-xl border border-border bg-secondary/50 px-4 py-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Select your size above to continue to payment
+                </p>
+              </div>
+            ) : initializing ? (
               <div className="flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-8 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                 Loading secure payment…
@@ -356,8 +399,6 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
                   ...(customerSessionSecret ? { customerSessionClientSecret: customerSessionSecret } : {}),
                   appearance,
                 }}
-                // Remount only if the intent itself changes (it won't for amount
-                // updates, which keep the same clientSecret).
                 key={clientSecret}
               >
                 <PaymentForm

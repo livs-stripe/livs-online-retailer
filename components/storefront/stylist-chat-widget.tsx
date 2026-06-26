@@ -9,6 +9,8 @@ import { formatUsd } from "@/lib/format"
 import { LS_CUSTOMER_ID, notifyOrderPlaced } from "@/lib/membership"
 import { ProductImage } from "./product-image"
 import { AgentCheckoutPanel } from "./agent-checkout-panel"
+import { SizeSelector } from "./size-selector"
+import { requiresSize } from "@/lib/sizing"
 import { useCart } from "./cart-context"
 import type { AgentOrder, Product } from "@/lib/types"
 
@@ -62,6 +64,8 @@ interface ChatProduct {
   name: string
   variant: string
   category: string
+  subcategory?: string
+  sizes?: string[]
   price: number
   image: string
   url: string
@@ -178,6 +182,8 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
     const saved = loadDemoState()
     return saved?.tryOnResult ?? null
   })
+  // Track selected sizes per product (keyed by product id)
+  const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textInputRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -408,15 +414,17 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
   }
 
   function toggleSelect(p: ChatProduct) {
+    const needsSize = requiresSize(p)
+    const size = selectedSizes[p.id] ?? null
+    if (needsSize && !size) return
+
     setSelection((prev) => {
       const next = { ...prev }
       if (next[p.id]) {
         delete next[p.id]
-        // Keep the main cart in sync — remove what the shopper deselects in chat.
         removeFromCart(p.id)
       } else {
-        next[p.id] = p as Product
-        // Mirror the addition into the storefront cart so both stay in sync.
+        next[p.id] = { ...p, selectedSize: size } as Product & { selectedSize?: string }
         addToCart(p.id, 1)
       }
       return next
@@ -675,6 +683,9 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                           <div key={i} className="grid w-full grid-cols-2 gap-2">
                             {products.map((p) => {
                               const added = Boolean(selection[p.id])
+                              const needsSize = requiresSize(p)
+                              const sizeSelected = selectedSizes[p.id] ?? null
+                              const canAdd = !needsSize || sizeSelected !== null
                               return (
                                 <div
                                   key={p.id}
@@ -693,30 +704,45 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                                       {p.name}
                                     </p>
                                     <p className="text-[11px] text-muted-foreground">{p.variant}</p>
-                                    <div className="mt-auto flex items-center justify-between pt-1.5">
-                                      <span className="font-serif text-sm text-foreground">{formatUsd(p.price)}</span>
+                                    <span className="font-serif text-sm text-foreground">{formatUsd(p.price)}</span>
+                                    {needsSize && !added && (
+                                      <div className="mt-1">
+                                        <SizeSelector
+                                          product={p}
+                                          selectedSize={sizeSelected}
+                                          onSelect={(size) => setSelectedSizes(prev => ({ ...prev, [p.id]: size }))}
+                                          variant="chat"
+                                        />
+                                      </div>
+                                    )}
+                                    <div className="mt-auto pt-1.5">
                                       <button
                                         type="button"
                                         onClick={() => toggleSelect(p)}
+                                        disabled={!canAdd && !added}
                                         aria-pressed={added}
                                         aria-label={added ? `Remove ${p.name}` : `Add ${p.name}`}
                                         className={cn(
-                                          "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors",
+                                          "inline-flex w-full items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition-colors",
                                           added
                                             ? "bg-accent text-accent-foreground"
-                                            : "border border-border bg-background text-foreground hover:bg-secondary",
+                                            : canAdd
+                                              ? "border border-border bg-background text-foreground hover:bg-secondary"
+                                              : "border border-border bg-secondary/50 text-muted-foreground cursor-not-allowed",
                                         )}
                                       >
                                         {added ? (
                                           <>
                                             <Check className="h-3 w-3" aria-hidden="true" />
-                                            Added
+                                            Added{sizeSelected ? ` · ${sizeSelected}` : ''}
                                           </>
-                                        ) : (
+                                        ) : canAdd ? (
                                           <>
                                             <Plus className="h-3 w-3" aria-hidden="true" />
-                                            Add
+                                            Add{sizeSelected ? ` · ${sizeSelected}` : ''}
                                           </>
+                                        ) : (
+                                          "Select size"
                                         )}
                                       </button>
                                     </div>
