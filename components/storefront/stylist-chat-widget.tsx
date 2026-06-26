@@ -82,6 +82,20 @@ interface VisionResult {
   imagePreview?: string
 }
 
+interface TryOnResult {
+  tryOnImage: string
+  caption: string
+  product: {
+    sku: string
+    name: string
+    colour: string
+    price: number
+    image: string
+    sizes: string[]
+    description: string
+  }
+}
+
 interface DemoPurchase {
   date: string
   items: string[]
@@ -157,7 +171,15 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
     const saved = loadDemoState()
     return saved?.postPurchaseMsg ?? false
   })
+  // Try-on state
+  const [stagedPhoto, setStagedPhoto] = useState<File | null>(null)
+  const [tryOnLoading, setTryOnLoading] = useState(false)
+  const [tryOnResult, setTryOnResult] = useState<TryOnResult | null>(() => {
+    const saved = loadDemoState()
+    return saved?.tryOnResult ?? null
+  })
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const textInputRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const [initialMessages] = useState<UIMessage[]>(() => loadPersistedMessages())
@@ -174,8 +196,8 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
 
   // Persist demo state to sessionStorage
   useEffect(() => {
-    persistDemoState({ demoMode, demoStep, demoMessages, showUploadPrompt, postPurchaseMsg, visionResult })
-  }, [demoMode, demoStep, demoMessages, showUploadPrompt, postPurchaseMsg, visionResult])
+    persistDemoState({ demoMode, demoStep, demoMessages, showUploadPrompt, postPurchaseMsg, visionResult, tryOnResult })
+  }, [demoMode, demoStep, demoMessages, showUploadPrompt, postPurchaseMsg, visionResult, tryOnResult])
 
   // The storefront cart. Items the shopper adds in chat are mirrored here so the
   // chat selection and the main cart stay in sync. (On the standalone membership
@@ -304,7 +326,8 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
 
   function submit(text: string) {
     const value = text.trim()
-    if (!value || busy) return
+    if (!value && !stagedPhoto) return
+    if (busy || tryOnLoading) return
     // Intercept /demo command
     if (value === "/demo") {
       setInput("")
@@ -312,10 +335,40 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
       return
     }
     setLastOrder(null)
-    // Pass the member's customer id per-message so the agent can pull their
-    // purchase history. Sent on the message body so it stays current.
+
+    // If there's a staged photo, route to try-on
+    if (stagedPhoto) {
+      const prompt = value || "Style me for work"
+      handleStyleMe(stagedPhoto, prompt)
+      setInput("")
+      return
+    }
+
+    // Regular text message to the AI agent
     void sendMessage({ text: value }, { body: { customerId } })
     setInput("")
+  }
+
+  async function handleStyleMe(imageFile: File, userText: string) {
+    setTryOnLoading(true)
+    setTryOnResult(null)
+    setStagedPhoto(null)
+    scrollToEnd()
+    try {
+      const formData = new FormData()
+      formData.append("image", imageFile)
+      formData.append("prompt", userText)
+      const res = await fetch("/api/style-me", { method: "POST", body: formData })
+      if (!res.ok) throw new Error(`Try-on failed: ${res.status}`)
+      const data: TryOnResult = await res.json()
+      setTryOnResult(data)
+    } catch {
+      setTryOnResult(null)
+      setVisionResult({ analysis: "I couldn't generate a try-on right now — want me to show you the product details instead?", recommendations: [] })
+    } finally {
+      setTryOnLoading(false)
+      scrollToEnd()
+    }
   }
 
   async function handlePhotoUpload(file: File) {
@@ -331,7 +384,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
       const data = await res.json()
       setVisionResult({ ...data, imagePreview: preview })
     } catch {
-      setVisionResult({ analysis: "Sorry, I couldn't analyse that photo. Try again?", recommendations: [], })
+      setVisionResult({ analysis: "Sorry, I couldn't analyse that photo. Try again?", recommendations: [] })
     } finally {
       setPhotoUploading(false)
       scrollToEnd()
@@ -340,7 +393,17 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (file) handlePhotoUpload(file)
+    if (!file) { e.target.value = ""; return }
+
+    // In demo mode with upload prompt showing, go straight to try-on with the Blazer
+    if (demoMode && showUploadPrompt) {
+      handleStyleMe(file, "How would I look in the Coastline Linen Blazer?")
+      e.target.value = ""
+      return
+    }
+
+    setStagedPhoto(file)
+    textInputRef.current?.focus()
     e.target.value = ""
   }
 
@@ -373,9 +436,11 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
     setDemoStep(0)
     setDemoMessages([])
     setVisionResult(null)
+    setTryOnResult(null)
     setShowUploadPrompt(false)
     setPostPurchaseMsg(false)
     setLastOrder(null)
+    setStagedPhoto(null)
     window.location.reload()
   }, [])
 
@@ -705,6 +770,88 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                   </li>
                 )}
 
+                {tryOnLoading && (
+                  <li className="flex items-start">
+                    <div className="w-full flex flex-col gap-2">
+                      <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-secondary px-3.5 py-2.5 text-sm text-muted-foreground">
+                        <Sparkles className="h-3.5 w-3.5 animate-pulse text-accent" aria-hidden="true" />
+                        <span className="italic">Trying it on for you — give me 10–15 seconds...</span>
+                      </div>
+                      <div className="rounded-xl overflow-hidden border border-[#E8E3DA]">
+                        <div
+                          className="h-80 w-full"
+                          style={{
+                            background: 'linear-gradient(90deg, #F5F0E8 25%, #E8E3DA 50%, #F5F0E8 75%)',
+                            backgroundSize: '200% 100%',
+                            animation: 'ah-shimmer 1.8s infinite',
+                          }}
+                        />
+                        <div className="p-3 bg-[#F5F0E8] flex items-center gap-2">
+                          <div className="w-12 h-16 rounded-lg bg-[#E8E3DA] animate-pulse" />
+                          <div className="flex-1">
+                            <div className="h-3 w-28 bg-[#E8E3DA] rounded animate-pulse mb-2" />
+                            <div className="h-3 w-16 bg-[#E8E3DA] rounded animate-pulse" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                )}
+
+                {tryOnResult && (
+                  <li className="flex flex-col items-start gap-2">
+                    <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-secondary px-3.5 py-2.5 text-sm leading-relaxed text-foreground">
+                      <span className="mb-1 flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-accent">
+                        <Sparkles className="h-3 w-3" aria-hidden="true" />
+                        Hem
+                      </span>
+                      <p className="text-pretty">{tryOnResult.caption}</p>
+                    </div>
+                    <div className="w-full rounded-xl overflow-hidden border border-[#E8E3DA]">
+                      <div className="relative bg-[#F5F0E8]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={tryOnResult.tryOnImage}
+                          alt="Virtual try-on"
+                          className="w-full object-cover object-top"
+                          style={{ maxHeight: '520px' }}
+                        />
+                        <div className="absolute bottom-2 right-2 bg-black/50 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1">
+                          <span>✦</span>
+                          <span>Virtual try-on</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 bg-[#F5F0E8]">
+                        <ProductImage
+                          src={tryOnResult.product.image}
+                          alt={tryOnResult.product.name}
+                          name={tryOnResult.product.name}
+                          sizes="48px"
+                          className="w-12 h-16 object-cover rounded-lg shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-[#1C1C1C] leading-tight">
+                            {tryOnResult.product.name}
+                          </p>
+                          <p className="text-xs text-[#1C1C1C]/50 mt-0.5">
+                            {tryOnResult.product.colour}
+                          </p>
+                          <p className="text-sm font-semibold text-[#C4714A] mt-1">
+                            ${tryOnResult.product.price} AUD
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => addToCart(tryOnResult.product.sku, 1)}
+                          className="shrink-0 bg-[#1C1C1C] text-[#F5F0E8] text-xs font-medium px-3 py-2 rounded-lg hover:bg-[#C4714A] transition-colors"
+                        >
+                          Add to bag
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                )}
+
                 {visionResult && (
                   <li className="flex flex-col items-start gap-2">
                     <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-secondary px-3.5 py-2.5 text-sm leading-relaxed text-foreground">
@@ -803,15 +950,16 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                 ))}
 
                 {/* Demo upload prompt overlay */}
-                {demoMode && showUploadPrompt && !visionResult && !photoUploading && (
+                {demoMode && showUploadPrompt && !tryOnResult && !tryOnLoading && !visionResult && !photoUploading && (
                   <li className="flex items-start">
                     <div className="w-full rounded-2xl border-2 border-dashed border-accent/40 bg-accent/5 px-4 py-4 text-center">
                       <Camera className="mx-auto h-6 w-6 text-accent" aria-hidden="true" />
-                      <p className="mt-2 text-sm font-medium text-foreground">Upload a photo to continue the demo</p>
+                      <p className="mt-2 text-sm font-medium text-foreground">Upload a photo of yourself to try on the Blazer</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Same face, same pose — just wearing the product</p>
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
+                        className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
                       >
                         <Camera className="h-3.5 w-3.5" aria-hidden="true" />
                         Choose photo
@@ -853,6 +1001,31 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
             </div>
           )}
 
+          {/* Staged photo preview */}
+          {stagedPhoto && (
+            <div className="border-t border-border px-3 pt-2 pb-1">
+              <div className="flex items-center gap-2 text-xs text-[#1C1C1C]/50">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={URL.createObjectURL(stagedPhoto)}
+                  alt=""
+                  className="w-8 h-8 object-cover rounded-md"
+                />
+                <span>Photo ready —</span>
+                <span className="text-[#C4714A]">
+                  try: &ldquo;How would I look in the Coastline Linen Blazer?&rdquo;
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setStagedPhoto(null)}
+                  className="ml-auto text-[#1C1C1C]/30 hover:text-[#C4714A] transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Input */}
           <form
             onSubmit={(e) => {
@@ -873,23 +1046,24 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={busy || photoUploading}
+              disabled={busy || photoUploading || tryOnLoading}
               aria-label="Upload a photo for styling"
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
             >
               <Camera className="h-4 w-4" aria-hidden="true" />
             </button>
             <input
+              ref={textInputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              disabled={busy}
-              placeholder="e.g. an outfit for a spring wedding"
+              disabled={busy || tryOnLoading}
+              placeholder={stagedPhoto ? "e.g. How would I look in the Coastline Linen Blazer?" : "e.g. an outfit for a spring wedding"}
               aria-label="Message Hem"
               className="h-11 flex-1 rounded-xl border border-border bg-background px-3.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
             />
             <button
               type="submit"
-              disabled={busy || !input.trim()}
+              disabled={(busy || tryOnLoading) || (!input.trim() && !stagedPhoto)}
               aria-label="Send"
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground transition-colors hover:bg-accent/90 disabled:opacity-50"
             >
