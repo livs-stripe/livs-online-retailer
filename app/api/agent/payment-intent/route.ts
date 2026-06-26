@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import type Stripe from "stripe"
 import { getStripe } from "@/lib/stripe"
+import { DEMO_USER } from "@/lib/demo-user"
 import { getProductById, summarizeCartItems } from "@/lib/products"
 import { computeAgentPrice, isValidLinenNumber } from "@/lib/shipping"
 import {
@@ -59,10 +60,8 @@ export async function POST(req: NextRequest) {
 
   const stripe = getStripe()
 
-  // The logged-in member's Stripe customer (from localStorage). When present we
-  // verify membership from the customer record itself, so the member never has
-  // to type their Edit Club number.
-  const customerId = typeof body.customerId === "string" && body.customerId ? body.customerId : null
+  // Always attach transactions to Amy's Stripe customer
+  const customerId = DEMO_USER.stripeCustomerId
 
   // Determine membership SERVER-SIDE. The authoritative source is the customer's
   // own Stripe record (this also works for auto-detected members whose "LL-123"
@@ -179,15 +178,10 @@ export async function POST(req: NextRequest) {
 
     const intent = await stripe.paymentIntents.create({
       amount: amountCents,
-      currency: "usd", // USD required for the ACS preview
-      // Card only — Apple Pay / Google Pay still surface automatically with
-      // `card`, and the member's saved card shows via the customer session above.
-      // We deliberately omit the standalone Link wallet: its secure auth window
-      // can't open inside the embedded preview iframe and gets pushed out to a
-      // new browser tab, which is a poor in-chat experience.
+      currency: "usd",
       payment_method_types: ["card"],
       description: `Aster & Hem Stylist — ${itemCount} item${itemCount === 1 ? "" : "s"}`,
-      ...(customerId ? { customer: customerId } : {}),
+      customer: customerId,
       metadata,
     })
 
