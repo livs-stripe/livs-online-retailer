@@ -540,9 +540,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                       </p>
                     ) : (
                       <p>
-                        Hi, I&apos;m Hem, your Aster &amp; Hem personal stylist. Tell me what you&apos;re shopping for — an
-                        occasion, a style, or a piece you love — and I&apos;ll curate an edit you can buy right here. Try
-                        one of these:
+                        Hi Amy — welcome back to Aster &amp; Hem. As a <strong>Gold Edit Club member</strong> your 10% discount and free delivery apply automatically at checkout.
                       </p>
                     )}
                   </div>
@@ -562,7 +560,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                       </div>
                     ))}
                     <div className="mt-1 rounded-2xl rounded-tl-sm bg-secondary px-3.5 py-2.5 text-sm leading-relaxed text-foreground">
-                      <p>You&apos;re building a strong work wardrobe. Want me to find what&apos;s missing — or upload a photo and I&apos;ll style you from there?</p>
+                      <p>You&apos;re building a strong work wardrobe. As a <strong>Gold Edit Club member</strong> your 10% discount and free delivery apply automatically at checkout. Want me to find what&apos;s missing — or upload a photo and I&apos;ll style you from there?</p>
                     </div>
                   </div>
                 )}
@@ -607,7 +605,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                       </div>
                     )}
                     <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-secondary px-3.5 py-2.5 text-sm leading-relaxed text-foreground">
-                      <p>You&apos;re building a strong work wardrobe. Want me to find what&apos;s missing — or upload a photo and I&apos;ll style you from there?</p>
+                      <p>You&apos;re building a strong work wardrobe. As a <strong>Gold Edit Club member</strong> your 10% discount and free delivery apply automatically at checkout. Want me to find what&apos;s missing — or upload a photo and I&apos;ll style you from there?</p>
                     </div>
                   </li>
                 )}

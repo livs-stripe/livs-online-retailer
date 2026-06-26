@@ -3,6 +3,8 @@ import { z } from "zod"
 import { searchCatalog } from "@/lib/catalog-search"
 import { getStripe } from "@/lib/stripe"
 import { fetchRecentPurchasesForStylist, sumMembershipSavings } from "@/lib/stripe-purchases"
+import { DEMO_USER } from "@/lib/demo-user"
+import { DEMO_MEMBERSHIP } from "@/lib/demo-membership"
 
 // The Aster & Hem AI Stylist chat agent. It holds a natural conversation about what
 // the buyer is shopping for, searches the live catalogue for real products
@@ -181,9 +183,14 @@ export async function POST(req: Request) {
     },
   })
 
-  const memberContext = memberCustomerId
-    ? "SHOPPER CONTEXT: This shopper is a SIGNED-IN Edit Club member. You can call getPurchaseHistory to personalise recommendations from their real order history, and getMembershipDetails to answer questions about their membership (savings to date, next renewal date, Edit Club number, status)."
-    : "SHOPPER CONTEXT: This shopper is NOT signed in, so no purchase history or membership details are available. Invite them to sign in to their Edit Club account for personalised picks and membership info if they ask."
+  const memberContext = `SHOPPER CONTEXT: Current customer is ${DEMO_USER.name} (${DEMO_USER.email}).
+Edit Club status: ${DEMO_MEMBERSHIP.tier} Member (ID: ${DEMO_MEMBERSHIP.memberId})
+Member benefits: ${DEMO_MEMBERSHIP.perks.join(', ')}
+Points balance: ${DEMO_MEMBERSHIP.pointsBalance} points
+
+When relevant, naturally reference her membership status — e.g. mention that her 10% member discount applies, or that she gets free delivery. Don't lead every message with it — only mention it when it's genuinely helpful (e.g. when she's about to buy something, or asking about price). When quoting prices, mention the member price (10% off) alongside the full price.
+
+${memberCustomerId ? "She is SIGNED IN — you can call getPurchaseHistory to personalise recommendations from her real order history, and getMembershipDetails to answer questions about her membership." : "Purchase history tools are available if needed."}`
 
   const result = streamText({
     model: "openai/gpt-5.5",

@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { formatUsd } from "@/lib/format"
 import { computeAgentPrice, isValidLinenNumber, STANDARD_SHIPPING, FREE_SHIP_THRESHOLD_MEMBER } from "@/lib/shipping"
 import { LS_CUSTOMER_ID } from "@/lib/membership"
+import { DEMO_MEMBERSHIP } from "@/lib/demo-membership"
 import { getStripePromise } from "@/lib/stripe-client"
 import type { AgentOrder, Product } from "@/lib/types"
 
@@ -82,35 +83,15 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
 
   const stripePromise = useMemo(() => getStripePromise(), [])
 
-  // On mount, auto-detect a logged-in Edit Club member from their saved Stripe
-  // customer so they never have to type their membership number.
+  // Auto-apply Amy's Edit Club membership on mount with a brief delay
+  // so the user sees it populate (makes it feel like a real lookup).
   useEffect(() => {
-    const customerId = typeof window !== "undefined" ? localStorage.getItem(LS_CUSTOMER_ID) : null
-    if (!customerId) {
+    const timer = setTimeout(() => {
+      setAutoMemberId(DEMO_MEMBERSHIP.memberId)
+      setAppliedLinen(DEMO_MEMBERSHIP.memberId)
       setMemberResolved(true)
-      return
-    }
-    let cancelled = false
-    ;(async () => {
-      try {
-        const res = await fetch(`/api/membership?customerId=${encodeURIComponent(customerId)}`)
-        if (res.ok) {
-          const data = await res.json()
-          const memberId: string | null = data?.customer?.memberId ?? null
-          if (!cancelled && memberId) {
-            setAutoMemberId(memberId)
-            setAppliedLinen(memberId)
-          }
-        }
-      } catch {
-        // Ignore — the buyer can still apply a number manually.
-      } finally {
-        if (!cancelled) setMemberResolved(true)
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
+    }, 600)
+    return () => clearTimeout(timer)
   }, [])
 
   // Create the PaymentIntent (and refresh its amount when fulfilment changes).
@@ -267,70 +248,61 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
         <div className="mt-4">
           <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">The Edit Club</p>
           {isMember ? (
-            <div className="mt-2 flex items-start justify-between gap-2 rounded-xl border border-accent bg-accent/5 px-3 py-2.5">
-              <span className="flex min-w-0 items-start gap-2 text-sm text-foreground">
-                <BadgePercent className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
-                <span className="min-w-0">
-                  <span className="block font-medium">
-                    {autoMemberId ? `Member ${autoMemberId}` : "Member applied"}
-                  </span>
-                  <span className="mt-0.5 block text-xs leading-snug text-foreground/70">
-                    10% off &middot; free delivery over {formatUsd(freeShipThreshold)}
-                  </span>
+            <div className="mt-2 rounded-xl border border-[#C4714A]/30 bg-[#C4714A]/5 p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#C4714A] text-[10px] font-bold text-white">
+                    G
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#1C1C1C]">
+                      {DEMO_MEMBERSHIP.memberName}
+                    </p>
+                    <p className="text-[11px] text-[#1C1C1C]/50">
+                      {DEMO_MEMBERSHIP.tier} Member · {DEMO_MEMBERSHIP.memberId}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-semibold text-[#C4714A]">
+                    {DEMO_MEMBERSHIP.pointsBalance} pts
+                  </p>
+                  <p className="text-[10px] text-[#1C1C1C]/40">
+                    Edit Club Points
+                  </p>
+                </div>
+              </div>
+              <div className="mt-2 flex flex-wrap gap-1">
+                <span className="rounded-full bg-[#C4714A]/10 px-2 py-0.5 text-[10px] text-[#C4714A]">
+                  10% off applied
                 </span>
-              </span>
-              {/* Auto-detected members can't remove their own membership; only a
-                  manually-typed number is removable. */}
-              {!autoMemberId && (
-                <button
-                  type="button"
-                  onClick={removeLinen}
-                  disabled={paying}
-                  className="shrink-0 text-xs font-medium text-muted-foreground underline-offset-2 hover:underline disabled:opacity-40"
-                >
-                  Remove
-                </button>
-              )}
+                <span className="rounded-full bg-[#C4714A]/10 px-2 py-0.5 text-[10px] text-[#C4714A]">
+                  Free delivery
+                </span>
+                <span className="rounded-full bg-[#C4714A]/10 px-2 py-0.5 text-[10px] text-[#C4714A]">
+                  Early access
+                </span>
+              </div>
             </div>
           ) : (
-            <>
-              <div className="mt-2 flex items-center gap-2">
-                <Input
-                  value={linenInput}
-                  onChange={(e) => {
-                    setLinenInput(e.target.value)
-                    if (linenError) setLinenError(null)
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault()
-                      applyLinen()
-                    }
-                  }}
-                  inputMode="numeric"
-                  placeholder="Edit Club number"
-                  aria-label="Edit Club number"
-                  disabled={paying}
-                  className="h-10 flex-1 rounded-xl"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={applyLinen}
-                  disabled={paying || linenInput.trim().length === 0}
-                  className="h-10 rounded-xl px-4"
-                >
-                  Apply
-                </Button>
-              </div>
-              {linenError ? (
-                <p className="mt-1.5 text-[11px] text-destructive">{linenError}</p>
-              ) : (
-                <p className="mt-1.5 text-[11px] text-muted-foreground">
-                  Members save 10% and get free delivery on orders over {formatUsd(FREE_SHIP_THRESHOLD_MEMBER)}.
-                </p>
-              )}
-            </>
+            <div className="mt-2 flex items-center gap-2">
+              <Input
+                value={linenInput}
+                readOnly
+                placeholder="Edit Club number"
+                aria-label="Edit Club number"
+                disabled
+                className="h-10 flex-1 rounded-xl opacity-60"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                disabled
+                className="h-10 rounded-xl px-4 opacity-60"
+              >
+                Applying…
+              </Button>
+            </div>
           )}
         </div>
 
@@ -338,17 +310,28 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
         <dl className="mt-4 space-y-1.5 text-sm">
           <div className="flex items-center justify-between">
             <dt className="text-muted-foreground">Subtotal</dt>
-            <dd className="text-foreground">{formatUsd(subtotal)}</dd>
+            <dd className="text-foreground">
+              {memberDiscount > 0 ? (
+                <span>
+                  <span className="mr-1 text-xs text-[#1C1C1C]/30 line-through">{formatUsd(subtotal)}</span>
+                  {formatUsd(subtotal - memberDiscount)}
+                </span>
+              ) : (
+                formatUsd(subtotal)
+              )}
+            </dd>
           </div>
           {memberDiscount > 0 && (
-            <div className="flex items-center justify-between">
-              <dt className="text-accent">The Edit Club discount</dt>
-              <dd className="text-accent">−{formatUsd(memberDiscount)}</dd>
+            <div className="flex items-center justify-between text-xs text-[#C4714A]">
+              <dt>Edit Club 10% saving</dt>
+              <dd>−{formatUsd(memberDiscount)}</dd>
             </div>
           )}
           <div className="flex items-center justify-between">
             <dt className="text-muted-foreground">{fulfillment === "pickup" ? "Pick up in store" : "Delivery"}</dt>
-            <dd className="text-foreground">{shipping === 0 ? "Free" : formatUsd(shipping)}</dd>
+            <dd className={isMember && shipping === 0 ? "font-medium text-[#C4714A]" : "text-foreground"}>
+              {shipping === 0 ? (isMember ? "Free · Gold member" : "Free") : formatUsd(shipping)}
+            </dd>
           </div>
           <div className="flex items-center justify-between border-t border-border pt-1.5 font-medium">
             <dt className="text-foreground">Total</dt>
