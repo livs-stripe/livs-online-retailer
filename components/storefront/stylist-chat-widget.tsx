@@ -903,56 +903,80 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                           <span>Virtual try-on</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 p-3 bg-[#F5F0E8]">
-                        <div className="w-20 h-24 shrink-0 rounded-lg border border-[#E8E3DA] overflow-hidden relative">
-                          <ProductImage
-                            src={tryOnResult.product.image}
-                            alt={tryOnResult.product.name}
-                            name={tryOnResult.product.name}
-                            sizes="80px"
-                          />
+                      <div className="flex flex-col gap-2 p-3 bg-[#F5F0E8]">
+                        <div className="flex items-center gap-3">
+                          <div className="w-20 h-24 shrink-0 rounded-lg border border-[#E8E3DA] overflow-hidden relative">
+                            <ProductImage
+                              src={tryOnResult.product.image}
+                              alt={tryOnResult.product.name}
+                              name={tryOnResult.product.name}
+                              sizes="80px"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-[#1C1C1C] leading-tight">
+                              {tryOnResult.product.name}
+                            </p>
+                            <p className="text-xs text-[#1C1C1C]/50 mt-0.5">
+                              {tryOnResult.product.colour}
+                            </p>
+                            <p className="text-sm font-semibold text-[#C4714A] mt-1">
+                              ${tryOnResult.product.price} AUD
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[#1C1C1C] leading-tight">
-                            {tryOnResult.product.name}
-                          </p>
-                          <p className="text-xs text-[#1C1C1C]/50 mt-0.5">
-                            {tryOnResult.product.colour}
-                          </p>
-                          <p className="text-sm font-semibold text-[#C4714A] mt-1">
-                            ${tryOnResult.product.price} AUD
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            if (tryOnResult?.product?.sku) {
-                              const p = tryOnResult.product
-                              setSelection((prev) => ({
-                                ...prev,
-                                [p.sku]: {
-                                  id: p.sku,
-                                  sku: p.sku,
-                                  name: p.name,
-                                  variant: p.colour,
-                                  colour: p.colour,
-                                  category: "",
-                                  price: p.price,
-                                  url: "#",
-                                  image: p.image,
-                                  featured: false,
-                                  sizes: p.sizes,
-                                  description: p.description,
-                                } as Product,
-                              }))
-                              addToCart(p.sku, 1)
-                            }
-                          }}
-                          className="shrink-0 bg-[#1C1C1C] text-[#F5F0E8] text-xs font-medium px-3 py-2 rounded-lg hover:bg-[#C4714A] transition-colors"
-                        >
-                          Add to bag
-                        </button>
+                        {!selection[tryOnResult.product.sku] ? (
+                          selectedSizes[tryOnResult.product.sku] ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                const p = tryOnResult.product
+                                setSelection((prev) => ({
+                                  ...prev,
+                                  [p.sku]: {
+                                    id: p.sku,
+                                    sku: p.sku,
+                                    name: p.name,
+                                    variant: p.colour,
+                                    colour: p.colour,
+                                    category: "",
+                                    price: p.price,
+                                    url: "#",
+                                    image: p.image,
+                                    featured: false,
+                                    sizes: p.sizes,
+                                    description: p.description,
+                                  } as Product,
+                                }))
+                                addToCart(p.sku, 1)
+                              }}
+                              className="w-full bg-[#1C1C1C] text-[#F5F0E8] text-xs font-medium px-3 py-2 rounded-lg hover:bg-[#C4714A] transition-colors"
+                            >
+                              Add to bag · {selectedSizes[tryOnResult.product.sku]}
+                            </button>
+                          ) : (
+                            <div className="flex flex-wrap gap-1.5">
+                              {(tryOnResult.product.sizes ?? []).map((size) => (
+                                <button
+                                  key={size}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setSelectedSizes(prev => ({ ...prev, [tryOnResult.product.sku]: size }))
+                                  }}
+                                  className="rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-medium text-foreground hover:bg-secondary transition-colors"
+                                >
+                                  {size}
+                                </button>
+                              ))}
+                            </div>
+                          )
+                        ) : (
+                          <div className="w-full bg-accent/10 text-accent text-xs font-medium px-3 py-2 rounded-lg text-center flex items-center justify-center gap-1">
+                            <Check className="h-3 w-3" /> Added · {selectedSizes[tryOnResult.product.sku]}
+                          </div>
+                        )}
                       </div>
                     </div>
                     {/* Accessories recommendations */}
