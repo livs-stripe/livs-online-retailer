@@ -237,7 +237,13 @@ function ProductTile({
 const TRYON_LOADING_MESSAGES = [
   "Styling your look...",
   "Matching the fabric and cut...",
-  "Almost there — perfecting the fit...",
+  "Checking the colour palette...",
+  "Adjusting the silhouette...",
+  "Layering the details...",
+  "Perfecting the drape...",
+  "Almost there...",
+  "Adding the finishing touches...",
+]
   "Adding the finishing touches...",
 ]
 
@@ -247,7 +253,7 @@ function TryOnLoadingAnimation() {
   useEffect(() => {
     const interval = setInterval(() => {
       setMsgIndex((i) => (i + 1) % TRYON_LOADING_MESSAGES.length)
-    }, 3000)
+    }, 1500)
     return () => clearInterval(interval)
   }, [])
 
@@ -283,7 +289,7 @@ function TryOnLoadingAnimation() {
             <p
               key={msgIndex}
               className="text-xs text-[#1C1C1C]/60 text-center font-medium transition-opacity duration-500"
-              style={{ animation: 'ah-fade-cycle 3s ease-in-out infinite' }}
+              style={{ animation: 'ah-fade-cycle 1.5s ease-in-out infinite' }}
             >
               {TRYON_LOADING_MESSAGES[msgIndex]}
             </p>
@@ -350,6 +356,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
   // Try-on state
   const [stagedPhoto, setStagedPhoto] = useState<File | null>(null)
   const [tryOnLoading, setTryOnLoading] = useState(false)
+  const [tryOnExpanded, setTryOnExpanded] = useState(false)
   const [tryOnResult, setTryOnResult] = useState<TryOnResult | null>(() => {
     const saved = loadDemoState()
     return saved?.tryOnResult ?? null
@@ -851,13 +858,10 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                     <div className="w-full rounded-2xl border border-accent/40 bg-accent/5 px-3.5 py-3 text-sm text-foreground">
                       <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-accent">
                         <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                        Order placed securely with Stripe
+                        Order confirmed
                       </span>
                       <p className="mt-1.5 leading-relaxed">
-                        Done! Your order of {lastOrder.itemCount}{" "}
-                        {lastOrder.itemCount === 1 ? "item" : "items"} for{" "}
-                        <span className="font-medium">{formatUsd(lastOrder.amount)}</span> is placed — paid securely with
-                        Stripe. Anything else I can style for you?
+                        Congratulations on your purchase! Your {lastOrder.itemCount === 1 ? "item is" : "items are"} on the way to you shortly. Check your email for a copy of your receipt.
                       </p>
                     </div>
                   </li>
@@ -888,7 +892,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                       <p className="text-pretty">{tryOnResult.caption}</p>
                     </div>
                     <div className="w-full rounded-xl overflow-hidden border border-[#E8E3DA]">
-                      <div className="relative bg-[#F5F0E8]">
+                      <div className="relative bg-[#F5F0E8] cursor-pointer" onClick={() => setTryOnExpanded(true)}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={tryOnResult.tryOnImage}
@@ -1212,6 +1216,35 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
             </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Expanded try-on image lightbox */}
+      {tryOnExpanded && tryOnResult && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => setTryOnExpanded(false)}
+        >
+          <div className="relative max-w-lg w-full max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={tryOnResult.tryOnImage}
+              alt="Virtual try-on expanded"
+              className="w-full h-full object-contain bg-[#F5F0E8]"
+            />
+            <button
+              type="button"
+              onClick={() => setTryOnExpanded(false)}
+              className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1">
+              <span>✦</span>
+              <span>Virtual try-on</span>
+            </div>
+          </div>
         </div>
       )}
     </>
