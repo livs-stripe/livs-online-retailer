@@ -128,7 +128,170 @@ const MEMBER_SUGGESTIONS = [
   "An outfit for a spring wedding",
 ]
 
+// Product tile used in chat search results — keeps size picker hidden until tapped.
+function ProductTile({
+  product: p,
+  added,
+  sizeSelected,
+  onSizeSelect,
+  onToggle,
+}: {
+  product: ChatProduct
+  added: boolean
+  sizeSelected: string | null
+  onSizeSelect: (size: string) => void
+  onToggle: () => void
+}) {
+  const [sizePickerOpen, setSizePickerOpen] = useState(false)
+  const needsSize = requiresSize(p)
+
+  return (
+    <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-background">
+      <div className="relative aspect-square w-full bg-secondary">
+        <ProductImage
+          src={p.image}
+          alt={`${p.name} — ${p.variant}`}
+          name={p.name}
+          sizes="180px"
+        />
+      </div>
+      <div className="flex flex-1 flex-col gap-1 p-2.5">
+        <p className="line-clamp-2 text-xs font-medium leading-snug text-foreground">
+          {p.name}
+        </p>
+        <p className="text-[11px] text-muted-foreground">{p.variant}</p>
+        <span className="font-serif text-sm text-foreground">{formatUsd(p.price)}</span>
+        {needsSize && !added && sizePickerOpen && (
+          <div className="mt-1 flex flex-wrap gap-1">
+            {(p.sizes ?? []).map((size) => (
+              <button
+                key={size}
+                type="button"
+                onClick={() => {
+                  onSizeSelect(size)
+                  setSizePickerOpen(false)
+                }}
+                className={cn(
+                  "rounded-md border px-2 py-1 text-[10px] font-medium transition-colors",
+                  sizeSelected === size
+                    ? "border-[#C4714A] bg-[#C4714A]/10 text-[#C4714A]"
+                    : "border-border bg-background text-foreground hover:bg-secondary"
+                )}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="mt-auto pt-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              if (added) {
+                onToggle()
+              } else if (needsSize && !sizeSelected) {
+                setSizePickerOpen(!sizePickerOpen)
+              } else {
+                onToggle()
+              }
+            }}
+            aria-pressed={added}
+            aria-label={added ? `Remove ${p.name}` : `Add ${p.name}`}
+            className={cn(
+              "inline-flex w-full items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition-colors",
+              added
+                ? "bg-accent text-accent-foreground"
+                : "border border-border bg-background text-foreground hover:bg-secondary",
+            )}
+          >
+            {added ? (
+              <>
+                <Check className="h-3 w-3" aria-hidden="true" />
+                Added{sizeSelected ? ` · ${sizeSelected}` : ''}
+              </>
+            ) : sizeSelected ? (
+              <>
+                <Plus className="h-3 w-3" aria-hidden="true" />
+                Add · {sizeSelected}
+              </>
+            ) : (
+              "Select size"
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // Floating conversational shopping agent. The buyer chats in plain language; the
+const TRYON_LOADING_MESSAGES = [
+  "Styling your look...",
+  "Matching the fabric and cut...",
+  "Almost there — perfecting the fit...",
+  "Adding the finishing touches...",
+]
+
+function TryOnLoadingAnimation() {
+  const [msgIndex, setMsgIndex] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMsgIndex((i) => (i + 1) % TRYON_LOADING_MESSAGES.length)
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <div className="w-full flex flex-col gap-2">
+      <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-secondary px-3.5 py-2.5 text-sm text-muted-foreground">
+        <Sparkles className="h-3.5 w-3.5 animate-pulse text-accent" aria-hidden="true" />
+        <span className="italic">Trying it on for you — give me 10–15 seconds...</span>
+      </div>
+      <div className="rounded-xl overflow-hidden border border-[#E8E3DA]">
+        <div
+          className="h-80 w-full relative flex items-center justify-center"
+          style={{
+            background: 'linear-gradient(135deg, #F5F0E8 0%, #E8E3DA 50%, #F5F0E8 100%)',
+            backgroundSize: '400% 400%',
+            animation: 'ah-gradient-shift 3s ease infinite',
+          }}
+        >
+          <div className="flex flex-col items-center gap-4 px-6">
+            <div className="relative w-16 h-16">
+              <div
+                className="absolute inset-0 rounded-full border-2 border-[#C4714A]/30"
+                style={{ animation: 'ah-spin-slow 3s linear infinite' }}
+              />
+              <div
+                className="absolute inset-1 rounded-full border-2 border-transparent border-t-[#C4714A]"
+                style={{ animation: 'ah-spin-slow 1.5s linear infinite' }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-[#C4714A]" />
+              </div>
+            </div>
+            <p
+              key={msgIndex}
+              className="text-xs text-[#1C1C1C]/60 text-center font-medium transition-opacity duration-500"
+              style={{ animation: 'ah-fade-cycle 3s ease-in-out infinite' }}
+            >
+              {TRYON_LOADING_MESSAGES[msgIndex]}
+            </p>
+          </div>
+        </div>
+        <div className="p-3 bg-[#F5F0E8] flex items-center gap-2">
+          <div className="w-12 h-16 rounded-lg bg-[#E8E3DA] animate-pulse" />
+          <div className="flex-1">
+            <div className="h-3 w-28 bg-[#E8E3DA] rounded animate-pulse mb-2" />
+            <div className="h-3 w-16 bg-[#E8E3DA] rounded animate-pulse" />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // agent searches the live catalogue, shows shoppable product cards, asks smart
 // follow-ups, and completes the purchase in-chat via Stripe agentic checkout.
 export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } = {}) {
@@ -546,13 +709,10 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                     {demoPurchases.length > 0 ? (
                       <p>Hi Olivia — welcome back to Aster &amp; Hem.</p>
                     ) : isMember ? (
-                      <p>
-                        Welcome back, {memberName ?? "there"}. Ask me anything about style inspiration or your
-                        recent purchases — or try one of these:
-                      </p>
+                      <p>Hi Olivia — welcome back to Aster &amp; Hem.</p>
                     ) : (
                       <p>
-                        Hi Olivia — welcome back to Aster &amp; Hem. Want me to find what&apos;s missing from your wardrobe — or upload a photo and I&apos;ll style you from there?
+                        Hi Olivia — welcome back to Aster &amp; Hem.
                       </p>
                     )}
                   </div>
@@ -649,75 +809,16 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                         if (products.length === 0) return null
                         return (
                           <div key={i} className="grid w-full grid-cols-2 gap-2">
-                            {products.map((p) => {
-                              const added = Boolean(selection[p.id])
-                              const needsSize = requiresSize(p)
-                              const sizeSelected = selectedSizes[p.id] ?? null
-                              const canAdd = !needsSize || sizeSelected !== null
-                              return (
-                                <div
-                                  key={p.id}
-                                  className="flex flex-col overflow-hidden rounded-xl border border-border bg-background"
-                                >
-                                  <div className="relative aspect-square w-full bg-secondary">
-                                    <ProductImage
-                                      src={p.image}
-                                      alt={`${p.name} — ${p.variant}`}
-                                      name={p.name}
-                                      sizes="180px"
-                                    />
-                                  </div>
-                                  <div className="flex flex-1 flex-col gap-1 p-2.5">
-                                    <p className="line-clamp-2 text-xs font-medium leading-snug text-foreground">
-                                      {p.name}
-                                    </p>
-                                    <p className="text-[11px] text-muted-foreground">{p.variant}</p>
-                                    <span className="font-serif text-sm text-foreground">{formatUsd(p.price)}</span>
-                                    {needsSize && !added && (
-                                      <div className="mt-1">
-                                        <SizeSelector
-                                          product={p}
-                                          selectedSize={sizeSelected}
-                                          onSelect={(size) => setSelectedSizes(prev => ({ ...prev, [p.id]: size }))}
-                                          variant="chat"
-                                        />
-                                      </div>
-                                    )}
-                                    <div className="mt-auto pt-1.5">
-                                      <button
-                                        type="button"
-                                        onClick={() => toggleSelect(p)}
-                                        disabled={!canAdd && !added}
-                                        aria-pressed={added}
-                                        aria-label={added ? `Remove ${p.name}` : `Add ${p.name}`}
-                                        className={cn(
-                                          "inline-flex w-full items-center justify-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition-colors",
-                                          added
-                                            ? "bg-accent text-accent-foreground"
-                                            : canAdd
-                                              ? "border border-border bg-background text-foreground hover:bg-secondary"
-                                              : "border border-border bg-secondary/50 text-muted-foreground cursor-not-allowed",
-                                        )}
-                                      >
-                                        {added ? (
-                                          <>
-                                            <Check className="h-3 w-3" aria-hidden="true" />
-                                            Added{sizeSelected ? ` · ${sizeSelected}` : ''}
-                                          </>
-                                        ) : canAdd ? (
-                                          <>
-                                            <Plus className="h-3 w-3" aria-hidden="true" />
-                                            Add{sizeSelected ? ` · ${sizeSelected}` : ''}
-                                          </>
-                                        ) : (
-                                          "Select size"
-                                        )}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              )
-                            })}
+                            {products.map((p) => (
+                              <ProductTile
+                                key={p.id}
+                                product={p}
+                                added={Boolean(selection[p.id])}
+                                sizeSelected={selectedSizes[p.id] ?? null}
+                                onSizeSelect={(size) => setSelectedSizes(prev => ({ ...prev, [p.id]: size }))}
+                                onToggle={() => toggleSelect(p)}
+                              />
+                            ))}
                           </div>
                         )
                       }
@@ -764,29 +865,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
 
                 {tryOnLoading && (
                   <li className="flex items-start">
-                    <div className="w-full flex flex-col gap-2">
-                      <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-secondary px-3.5 py-2.5 text-sm text-muted-foreground">
-                        <Sparkles className="h-3.5 w-3.5 animate-pulse text-accent" aria-hidden="true" />
-                        <span className="italic">Trying it on for you — give me 10–15 seconds...</span>
-                      </div>
-                      <div className="rounded-xl overflow-hidden border border-[#E8E3DA]">
-                        <div
-                          className="h-80 w-full"
-                          style={{
-                            background: 'linear-gradient(90deg, #F5F0E8 25%, #E8E3DA 50%, #F5F0E8 75%)',
-                            backgroundSize: '200% 100%',
-                            animation: 'ah-shimmer 1.8s infinite',
-                          }}
-                        />
-                        <div className="p-3 bg-[#F5F0E8] flex items-center gap-2">
-                          <div className="w-12 h-16 rounded-lg bg-[#E8E3DA] animate-pulse" />
-                          <div className="flex-1">
-                            <div className="h-3 w-28 bg-[#E8E3DA] rounded animate-pulse mb-2" />
-                            <div className="h-3 w-16 bg-[#E8E3DA] rounded animate-pulse" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <TryOnLoadingAnimation />
                   </li>
                 )}
 
@@ -1027,9 +1106,8 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                   alt=""
                   className="w-8 h-8 object-cover rounded-md"
                 />
-                <span>Photo ready —</span>
                 <span className="text-[#C4714A]">
-                  try: &ldquo;How would I look in the Coastline Linen Blazer?&rdquo;
+                  try: &ldquo;Which accessories would you recommend with this outfit?&rdquo;
                 </span>
                 <button
                   type="button"

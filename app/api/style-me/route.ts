@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
-export const maxDuration = 60
+export const maxDuration = 120
 
 export async function POST(req: NextRequest) {
   try {
@@ -61,19 +61,27 @@ Request: "${userPrompt}"`,
       return Response.json({ error: `Could not load product image for ${product.sku}` }, { status: 500 })
     }
 
-    // Step 3: Virtual try-on using gpt-image-1 via AI SDK
+    // Step 3: Virtual try-on using gpt-image-1 with high input fidelity for face preservation
     let tryOnImageUrl: string
     try {
       const imageResult = await generateImage({
         model: "openai/gpt-image-1",
         prompt: {
           images: [userBuffer, garmentBuffer],
-          text: `Edit this photo: replace ONLY the clothing the person is wearing with the garment shown in the second image (${product.name} in ${product.colour}). Keep the person's face, hair, body, pose, and background completely unchanged. Only modify the clothing.`,
+          text: `The first image is a photo of a real person. The second image is a clothing item: ${product.name} in ${product.colour}.
+
+Edit the first photo so the person is wearing the clothing from the second image. 
+
+ABSOLUTE REQUIREMENTS:
+- The person's face must be IDENTICAL — same eyes, nose, mouth, skin, expression, freckles, everything
+- Same hair, same pose, same background, same lighting
+- ONLY change what they are wearing on their torso/body to match the garment in image 2
+- This is a photo edit, not a new image — treat the face and background as locked pixels`,
         },
         size: '1024x1024',
         providerOptions: {
           openai: {
-            quality: 'low',
+            quality: 'high',
             inputFidelity: 'high',
           },
         },
