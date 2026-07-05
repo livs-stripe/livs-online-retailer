@@ -544,7 +544,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                       Hem
                     </span>
                     {demoPurchases.length > 0 ? (
-                      <p>Hi Amy — welcome back to Aster &amp; Hem.</p>
+                      <p>Hi Olivia — welcome back to Aster &amp; Hem.</p>
                     ) : isMember ? (
                       <p>
                         Welcome back, {memberName ?? "there"}. Ask me anything about style inspiration or your
@@ -552,7 +552,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                       </p>
                     ) : (
                       <p>
-                        Hi Amy — welcome back to Aster &amp; Hem. As a <strong>Gold Edit Club member</strong> your 10% discount and free delivery apply automatically at checkout.
+                        Hi Olivia — welcome back to Aster &amp; Hem. As a <strong>Gold Edit Club member</strong> your 10% discount and free delivery apply automatically at checkout.
                       </p>
                     )}
                   </div>
@@ -600,7 +600,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                         <Sparkles className="h-3 w-3" aria-hidden="true" />
                         Hem
                       </span>
-                      <p>Hi Amy — welcome back to Aster &amp; Hem.</p>
+                      <p>Hi Olivia — welcome back to Aster &amp; Hem.</p>
                     </div>
                     {demoPurchases.length > 0 && (
                       <div className="w-full flex flex-col gap-2">
@@ -854,8 +854,8 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                           src={tryOnResult.product.image}
                           alt={tryOnResult.product.name}
                           name={tryOnResult.product.name}
-                          sizes="48px"
-                          className="w-12 h-16 object-cover rounded-lg shrink-0"
+                          sizes="80px"
+                          className="w-20 h-24 object-cover rounded-lg shrink-0 border border-[#E8E3DA]"
                         />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-[#1C1C1C] leading-tight">
@@ -870,7 +870,12 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                         </div>
                         <button
                           type="button"
-                          onClick={() => addToCart(tryOnResult.product.sku, 1)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (tryOnResult?.product?.sku) {
+                              addToCart(tryOnResult.product.sku, 1)
+                            }
+                          }}
                           className="shrink-0 bg-[#1C1C1C] text-[#F5F0E8] text-xs font-medium px-3 py-2 rounded-lg hover:bg-[#C4714A] transition-colors"
                         >
                           Add to bag
@@ -1004,7 +1009,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                         <Sparkles className="h-3 w-3" aria-hidden="true" />
                         Hem
                       </span>
-                      <p>You&apos;re all set, Amy. It&apos;ll be with you soon. Want to see what pairs with it?</p>
+                      <p>You&apos;re all set, Olivia. It&apos;ll be with you soon. Want to see what pairs with it?</p>
                     </div>
                   </li>
                 )}

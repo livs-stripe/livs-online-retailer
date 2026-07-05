@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
   const stripe = getStripe()
 
-  // Always attach transactions to Amy's Stripe customer
+  // Always attach transactions to Olivia's Stripe customer
   const customerId = DEMO_USER.stripeCustomerId
 
   // Determine membership SERVER-SIDE. The authoritative source is the customer's

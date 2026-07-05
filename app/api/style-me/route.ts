@@ -68,15 +68,17 @@ Request: "${userPrompt}"`,
         model: "openai/gpt-image-1",
         prompt: {
           images: [userBuffer, garmentBuffer],
-          text: `Virtual clothing try-on. The first image is a person. The second image is a garment: ${product.name} in ${product.colour}.
+          text: `Virtual clothing try-on — EDIT the first image ONLY by changing the clothing.
 
-Generate a photorealistic image of the SAME person from the first image wearing the garment from the second image.
+The first image is the person. The second image is the garment to put on them: ${product.name} in ${product.colour}.
 
-Rules:
-- Preserve EXACTLY: face, hair, skin tone, body pose, background, lighting
-- Change ONLY: the clothing to show them wearing the garment
-- Result must look like a natural photograph, not a composite
-- Do not alter the person's identity or any non-clothing element`,
+CRITICAL — DO NOT change the person in any way:
+- The person's face, facial features, expression, skin tone, hair colour, hair style, body shape, and pose MUST remain IDENTICAL to the first image
+- The background, lighting, and composition MUST remain IDENTICAL to the first image
+- You are ONLY allowed to edit/replace the clothing on the person's body with the garment shown in the second image
+- Think of this as inpainting ONLY the clothing region — everything else is frozen
+- The output should look like the exact same photo with only the outfit changed
+- Do NOT regenerate or reimagine the person — keep every pixel outside the clothing area unchanged`,
         },
         size: '1024x1024',
       })

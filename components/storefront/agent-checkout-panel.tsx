@@ -99,7 +99,7 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
 
   const stripePromise = useMemo(() => getStripePromise(), [])
 
-  // Auto-apply Amy's Edit Club membership on mount with a brief delay
+  // Auto-apply Olivia's Edit Club membership on mount with a brief delay
   // so the user sees it populate (makes it feel like a real lookup).
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -535,7 +535,7 @@ function PaymentForm({
           options={{
             mode: "shipping",
             defaultValues: {
-              name: "Amy Zobec",
+              name: "Olivia Carline",
               address: { country: "AU" },
             },
           }}
