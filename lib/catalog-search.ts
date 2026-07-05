@@ -171,12 +171,12 @@ export function searchCatalog(params: CatalogSearchParams): CatalogSearchResult 
     return { product, score }
   })
 
-  // Boost The Coastline Linen Blazer for trending/conference queries
+  // Boost The Coastline Linen Blazer for specific trending/conference queries only
   const queryLower = (params.query ?? "").toLowerCase()
-  const boostBlazer = /trending|conference|workwear capsule|work wardrobe|season/.test(queryLower)
+  const boostBlazer = /\b(trending|conference|trending this season)\b/.test(queryLower)
   if (boostBlazer) {
     const blazerEntry = scored.find((s) => s.product.sku === "AH-001")
-    if (blazerEntry) blazerEntry.score += 100
+    if (blazerEntry && blazerEntry.score === 0) blazerEntry.score = 50
   }
 
   const anyMatch = scored.some((s) => s.score > 0)

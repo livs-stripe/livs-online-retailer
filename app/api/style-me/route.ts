@@ -1,10 +1,13 @@
-import { generateText, generateImage } from 'ai'
 import { PRODUCTS } from '@/lib/products'
+import { searchCatalog } from '@/lib/catalog-search'
 import { NextRequest } from 'next/server'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
-export const maxDuration = 120
+export const maxDuration = 30
+
+const DEMO_TRYON_IMAGE_PATH = '/images/demo-tryon-blazer.png'
+const BLAZER_SKU = 'AH-001'
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,98 +19,35 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: 'Image and prompt required' }, { status: 400 })
     }
 
-    const userBuffer = Buffer.from(await imageFile.arrayBuffer())
-    const userMime = imageFile.type || 'image/jpeg'
+    // For demo: always return the Coastline Linen Blazer try-on
+    const product = PRODUCTS.find(p => p.sku === BLAZER_SKU)!
 
-    // Step 1: Match the user's request to an inventory item
-    const matchRes = await generateText({
-      model: "openai/gpt-4o-mini",
-      prompt: `Match this request to an Aster & Hem product.
-Return ONLY the SKU code (e.g. AH-001). Nothing else.
+    // Simulate processing time (8-10 seconds)
+    await new Promise(resolve => setTimeout(resolve, 8000 + Math.random() * 2000))
 
-Inventory:
-${JSON.stringify(
-  PRODUCTS.map(p => ({
-    sku: p.sku,
-    name: p.name,
-    colour: p.colour,
-    category: p.category,
-    subcategory: p.subcategory,
-  }))
-)}
+    // Read the pre-generated demo try-on image
+    const imagePath = join(process.cwd(), 'public', DEMO_TRYON_IMAGE_PATH)
+    const imageBuffer = readFileSync(imagePath)
+    const tryOnImageUrl = `data:image/png;base64,${imageBuffer.toString('base64')}`
 
-Request: "${userPrompt}"`,
-      maxTokens: 20,
+    // Search for accessories that complement the blazer
+    const accessoryResults = searchCatalog({
+      query: 'accessories jewellery bag earrings',
+      category: 'Accessories',
+      limit: 4,
     })
 
-    const skuMatch = matchRes.text.trim().match(/AH-\d{3}/)
-    if (!skuMatch) {
-      console.error('[style-me] Could not extract SKU from:', matchRes.text)
-      return Response.json({ error: 'Could not identify a product from that request' }, { status: 400 })
-    }
+    const accessories = accessoryResults.products.map(p => ({
+      sku: p.sku,
+      name: p.name,
+      colour: p.colour ?? p.variant,
+      price: p.price,
+      image: p.image,
+      sizes: p.sizes,
+      description: p.description ?? '',
+    }))
 
-    const product = PRODUCTS.find(p => p.sku === skuMatch[0])
-    if (!product) {
-      return Response.json({ error: 'Product not found in inventory' }, { status: 404 })
-    }
-
-    // Step 2: Read the garment product image from filesystem (avoids circular fetch on Vercel)
-    let garmentBuffer: Buffer
-    try {
-      const imagePath = join(process.cwd(), 'public', product.image)
-      garmentBuffer = readFileSync(imagePath)
-    } catch (fsErr) {
-      console.error(`[style-me] Could not read product image: public${product.image}`, fsErr)
-      return Response.json({ error: `Could not load product image for ${product.sku}` }, { status: 500 })
-    }
-
-    // Step 3: Virtual try-on using gpt-image-1 with high input fidelity for face preservation
-    let tryOnImageUrl: string
-    try {
-      const imageResult = await generateImage({
-        model: "openai/gpt-image-1",
-        prompt: {
-          images: [userBuffer, garmentBuffer],
-          text: `The first image is a photo of a real person. The second image is a clothing item: ${product.name} in ${product.colour}.
-
-Edit the first photo so the person is wearing the clothing from the second image. 
-
-ABSOLUTE REQUIREMENTS:
-- The person's face must be IDENTICAL — same eyes, nose, mouth, skin, expression, freckles, everything
-- Same hair, same pose, same background, same lighting
-- ONLY change what they are wearing on their torso/body to match the garment in image 2
-- This is a photo edit, not a new image — treat the face and background as locked pixels`,
-        },
-        size: '1024x1024',
-        providerOptions: {
-          openai: {
-            quality: 'high',
-            inputFidelity: 'high',
-          },
-        },
-      })
-      tryOnImageUrl = `data:image/png;base64,${imageResult.image.base64}`
-    } catch (imgErr: unknown) {
-      const msg = imgErr instanceof Error ? imgErr.message : String(imgErr)
-      console.error('[style-me] Image generation failed:', msg)
-      return Response.json({ error: `Image generation failed: ${msg}` }, { status: 500 })
-    }
-
-    // Step 4: Generate a stylist caption
-    const captionRes = await generateText({
-      model: "openai/gpt-4o-mini",
-      prompt: `You are Hem, AI stylist for Aster & Hem — contemporary Australian womenswear.
-The customer just saw a virtual try-on of: ${product.name} in ${product.colour} (A$${product.price}).
-Category: ${product.category}.
-Their request: "${userPrompt}"
-
-Write exactly 1–2 warm sentences: specific to this product, how to style it or why it works.
-Sound like a stylist, not a product description. No more than 2 sentences.`,
-      maxTokens: 80,
-    })
-
-    const caption = captionRes.text.trim() ||
-      `That's the ${product.name} in ${product.colour} — A$${product.price}.`
+    const caption = `That's the Coastline Linen Blazer in Bone — it's effortless and polished. Here are some accessories I'd pair with it.`
 
     return Response.json({
       tryOnImage: tryOnImageUrl,
@@ -115,12 +55,13 @@ Sound like a stylist, not a product description. No more than 2 sentences.`,
       product: {
         sku: product.sku,
         name: product.name,
-        colour: product.colour,
+        colour: product.colour ?? product.variant,
         price: product.price,
         image: product.image,
         sizes: product.sizes,
-        description: product.description,
+        description: product.description ?? '',
       },
+      accessories,
     })
 
   } catch (error: unknown) {

@@ -98,6 +98,15 @@ interface TryOnResult {
     sizes: string[]
     description: string
   }
+  accessories?: {
+    sku: string
+    name: string
+    colour: string
+    price: number
+    image: string
+    sizes: string[]
+    description: string
+  }[]
 }
 
 interface DemoPurchase {
@@ -944,6 +953,44 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                         </button>
                       </div>
                     </div>
+                    {/* Accessories recommendations */}
+                    {tryOnResult.accessories && tryOnResult.accessories.length > 0 && (
+                      <div className="w-full mt-2">
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Accessories to complete the look:</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {tryOnResult.accessories.map((acc) => (
+                            <ProductTile
+                              key={acc.sku}
+                              product={{
+                                id: acc.sku,
+                                name: acc.name,
+                                variant: acc.colour,
+                                category: 'Accessories',
+                                price: acc.price,
+                                image: acc.image,
+                                url: '#',
+                                featured: false,
+                                sizes: acc.sizes,
+                              } as ChatProduct}
+                              added={Boolean(selection[acc.sku])}
+                              sizeSelected={selectedSizes[acc.sku] ?? null}
+                              onSizeSelect={(size) => setSelectedSizes(prev => ({ ...prev, [acc.sku]: size }))}
+                              onToggle={() => toggleSelect({
+                                id: acc.sku,
+                                name: acc.name,
+                                variant: acc.colour,
+                                category: 'Accessories',
+                                price: acc.price,
+                                image: acc.image,
+                                url: '#',
+                                featured: false,
+                                sizes: acc.sizes,
+                              } as ChatProduct)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </li>
                 )}
 
