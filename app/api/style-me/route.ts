@@ -68,19 +68,15 @@ Request: "${userPrompt}"`,
         model: "openai/gpt-image-1",
         prompt: {
           images: [userBuffer, garmentBuffer],
-          text: `Virtual clothing try-on — EDIT the first image ONLY by changing the clothing.
-
-The first image is the person. The second image is the garment to put on them: ${product.name} in ${product.colour}.
-
-CRITICAL — DO NOT change the person in any way:
-- The person's face, facial features, expression, skin tone, hair colour, hair style, body shape, and pose MUST remain IDENTICAL to the first image
-- The background, lighting, and composition MUST remain IDENTICAL to the first image
-- You are ONLY allowed to edit/replace the clothing on the person's body with the garment shown in the second image
-- Think of this as inpainting ONLY the clothing region — everything else is frozen
-- The output should look like the exact same photo with only the outfit changed
-- Do NOT regenerate or reimagine the person — keep every pixel outside the clothing area unchanged`,
+          text: `Edit this photo: replace ONLY the clothing the person is wearing with the garment shown in the second image (${product.name} in ${product.colour}). Keep the person's face, hair, body, pose, and background completely unchanged. Only modify the clothing.`,
         },
         size: '1024x1024',
+        providerOptions: {
+          openai: {
+            quality: 'low',
+            inputFidelity: 'high',
+          },
+        },
       })
       tryOnImageUrl = `data:image/png;base64,${imageResult.image.base64}`
     } catch (imgErr: unknown) {

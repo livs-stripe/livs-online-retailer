@@ -144,6 +144,7 @@ function hasWord(haystack: string, word: string): boolean {
  */
 export function searchCatalog(params: CatalogSearchParams): CatalogSearchResult {
   const limit = Math.min(Math.max(params.limit ?? 6, 1), 10)
+  const evenLimit = limit % 2 === 0 ? limit : limit + 1
   const matchedCategory = resolveCategory(params.category)
   const tokens = buildTokens(params.query ?? "")
 
@@ -181,11 +182,12 @@ export function searchCatalog(params: CatalogSearchParams): CatalogSearchResult 
   // When the query produced no keyword matches at all but a category was
   // resolved, fall back to the best-known (featured, then cheapest) items in
   // that category so the agent always has something relevant to show.
-  const top = (anyMatch ? scored.filter((s) => s.score > 0) : scored).slice(0, limit)
+  const top = (anyMatch ? scored.filter((s) => s.score > 0) : scored).slice(0, evenLimit)
+  const evenTop = top.length % 2 === 0 ? top : top.slice(0, -1)
 
   return {
-    products: top.map((s) => s.product),
-    count: top.length,
+    products: evenTop.map((s) => s.product),
+    count: evenTop.length,
     matchedCategory,
   }
 }

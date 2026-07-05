@@ -552,30 +552,11 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                       </p>
                     ) : (
                       <p>
-                        Hi Olivia — welcome back to Aster &amp; Hem. As a <strong>Gold Edit Club member</strong> your 10% discount and free delivery apply automatically at checkout.
+                        Hi Olivia — welcome back to Aster &amp; Hem. Want me to find what&apos;s missing from your wardrobe — or upload a photo and I&apos;ll style you from there?
                       </p>
                     )}
                   </div>
                 </div>
-
-                {/* Purchase history cards */}
-                {demoPurchases.length > 0 && (
-                  <div className="ml-9 flex flex-col gap-2">
-                    <p className="text-xs font-medium text-muted-foreground">Here&apos;s what you&apos;ve picked up recently:</p>
-                    {demoPurchases.map((p, i) => (
-                      <div key={i} className="rounded-lg border border-border bg-background px-3 py-2 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium text-foreground">{p.description}</span>
-                          <span className="text-muted-foreground">${p.amount.toFixed(0)}</span>
-                        </div>
-                        <p className="mt-0.5 text-muted-foreground">{p.date}</p>
-                      </div>
-                    ))}
-                    <div className="mt-1 rounded-2xl rounded-tl-sm bg-secondary px-3.5 py-2.5 text-sm leading-relaxed text-foreground">
-                      <p>You&apos;re building a strong work wardrobe. As a <strong>Gold Edit Club member</strong> your 10% discount and free delivery apply automatically at checkout. Want me to find what&apos;s missing — or upload a photo and I&apos;ll style you from there?</p>
-                    </div>
-                  </div>
-                )}
 
                 <div className="flex flex-wrap gap-2 pl-9">
                   {suggestions.map((s) => (
@@ -600,24 +581,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                         <Sparkles className="h-3 w-3" aria-hidden="true" />
                         Hem
                       </span>
-                      <p>Hi Olivia — welcome back to Aster &amp; Hem.</p>
-                    </div>
-                    {demoPurchases.length > 0 && (
-                      <div className="w-full flex flex-col gap-2">
-                        <p className="text-xs font-medium text-muted-foreground ml-2">Here&apos;s what you&apos;ve picked up recently:</p>
-                        {demoPurchases.map((p, i) => (
-                          <div key={i} className="rounded-lg border border-border bg-background px-3 py-2 text-xs">
-                            <div className="flex items-center justify-between">
-                              <span className="font-medium text-foreground">{p.description}</span>
-                              <span className="text-muted-foreground">${p.amount.toFixed(0)}</span>
-                            </div>
-                            <p className="mt-0.5 text-muted-foreground">{p.date}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-secondary px-3.5 py-2.5 text-sm leading-relaxed text-foreground">
-                      <p>You&apos;re building a strong work wardrobe. As a <strong>Gold Edit Club member</strong> your 10% discount and free delivery apply automatically at checkout. Want me to find what&apos;s missing — or upload a photo and I&apos;ll style you from there?</p>
+                      <p>Hi Olivia — welcome back to Aster &amp; Hem. Want me to find what&apos;s missing from your wardrobe — or upload a photo and I&apos;ll style you from there?</p>
                     </div>
                   </li>
                 )}
@@ -850,13 +814,14 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                         </div>
                       </div>
                       <div className="flex items-center gap-3 p-3 bg-[#F5F0E8]">
-                        <ProductImage
-                          src={tryOnResult.product.image}
-                          alt={tryOnResult.product.name}
-                          name={tryOnResult.product.name}
-                          sizes="80px"
-                          className="w-20 h-24 object-cover rounded-lg shrink-0 border border-[#E8E3DA]"
-                        />
+                        <div className="w-20 h-24 shrink-0 rounded-lg border border-[#E8E3DA] overflow-hidden relative">
+                          <ProductImage
+                            src={tryOnResult.product.image}
+                            alt={tryOnResult.product.name}
+                            name={tryOnResult.product.name}
+                            sizes="80px"
+                          />
+                        </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-[#1C1C1C] leading-tight">
                             {tryOnResult.product.name}
@@ -873,7 +838,25 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                           onClick={(e) => {
                             e.stopPropagation()
                             if (tryOnResult?.product?.sku) {
-                              addToCart(tryOnResult.product.sku, 1)
+                              const p = tryOnResult.product
+                              setSelection((prev) => ({
+                                ...prev,
+                                [p.sku]: {
+                                  id: p.sku,
+                                  sku: p.sku,
+                                  name: p.name,
+                                  variant: p.colour,
+                                  colour: p.colour,
+                                  category: "",
+                                  price: p.price,
+                                  url: "#",
+                                  image: p.image,
+                                  featured: false,
+                                  sizes: p.sizes,
+                                  description: p.description,
+                                } as Product,
+                              }))
+                              addToCart(p.sku, 1)
                             }
                           }}
                           className="shrink-0 bg-[#1C1C1C] text-[#F5F0E8] text-xs font-medium px-3 py-2 rounded-lg hover:bg-[#C4714A] transition-colors"
@@ -1103,15 +1086,6 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
               <Send className="h-4 w-4" aria-hidden="true" />
             </button>
             </div>
-            {(messages.length > 0 || demoMode) && (
-              <button
-                type="button"
-                onClick={clearChatHistory}
-                className="self-center text-xs text-[#C4714A] underline opacity-50 hover:opacity-100 transition-opacity"
-              >
-                Start new conversation
-              </button>
-            )}
           </form>
         </div>
       )}
