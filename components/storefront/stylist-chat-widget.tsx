@@ -244,8 +244,6 @@ const TRYON_LOADING_MESSAGES = [
   "Almost there...",
   "Adding the finishing touches...",
 ]
-  "Adding the finishing touches...",
-]
 
 function TryOnLoadingAnimation() {
   const [msgIndex, setMsgIndex] = useState(0)
