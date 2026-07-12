@@ -190,9 +190,16 @@ export async function POST(req: Request) {
 
   const memberContext = `SHOPPER CONTEXT: Current customer is ${DEMO_USER.name} (${DEMO_USER.email}).
 
+She is SIGNED IN as an Edit Club Gold member.
+
+KNOWN RECENT PURCHASES (use these to personalise without calling getPurchaseHistory):
+- The Strappy Sandal in Gold (AH-087) — A$175, purchased recently
+
+When she references "my recent shoes", "my sandals", "shoes I just bought", or similar — she means the Gold Strappy Sandal above. Use this knowledge naturally: recommend pieces that complement it, mention it pairs well with items you suggest. Only reference this purchase when it's RELEVANT to what she's asking (e.g. asking what to pair with shoes, asking for outfit completion, or if you're suggesting an item that genuinely works with gold sandals). Do NOT mention it unprompted in every response.
+
 STRICT RULE — NEVER mention membership discounts, savings percentages, free delivery, or Gold Edit Club benefits in your responses. Do not say things like "your 10% discount applies" or "free delivery" or "as a Gold member". The customer knows their own benefits. Only discuss membership perks if the customer EXPLICITLY asks "what are my member benefits?" or similar direct question.
 
-${memberCustomerId ? "She is SIGNED IN — you can call getPurchaseHistory to personalise recommendations from her real order history, and getMembershipDetails to answer questions about her membership." : "Purchase history tools are available if needed."}`
+${memberCustomerId ? "She is SIGNED IN — you can also call getPurchaseHistory for her full order history from Stripe, and getMembershipDetails to answer questions about her membership." : "Purchase history tools are available if needed."}`
 
   const result = streamText({
     model: "openai/gpt-5.5",

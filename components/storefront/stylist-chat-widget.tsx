@@ -7,6 +7,7 @@ import { Sparkles, Send, X, MessageCircle, Plus, Check, ShoppingBag, ShieldCheck
 import { cn } from "@/lib/utils"
 import { formatUsd } from "@/lib/format"
 import { LS_CUSTOMER_ID, notifyOrderPlaced } from "@/lib/membership"
+import { DEMO_USER } from "@/lib/demo-user"
 import { ProductImage } from "./product-image"
 import { AgentCheckoutPanel } from "./agent-checkout-panel"
 import { SizeSelector } from "./size-selector"
@@ -321,7 +322,11 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
   // The member's first name (from their Edit Club membership) for the greeting.
   const [memberName, setMemberName] = useState<string | null>(null)
   // Items the buyer has added for purchase, keyed by product id.
-  const [selection, setSelection] = useState<Record<string, Product>>({})
+  // Restored from sessionStorage so the cart survives panel close/open.
+  const [selection, setSelection] = useState<Record<string, Product>>(() => {
+    const saved = loadDemoState()
+    return saved?.selection ?? {}
+  })
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [lastOrder, setLastOrder] = useState<AgentOrder | null>(null)
   const [photoUploading, setPhotoUploading] = useState(false)
@@ -360,7 +365,10 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
     return saved?.tryOnResult ?? null
   })
   // Track selected sizes per product (keyed by product id)
-  const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({})
+  const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>(() => {
+    const saved = loadDemoState()
+    return saved?.selectedSizes ?? {}
+  })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textInputRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -379,8 +387,8 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
 
   // Persist demo state to sessionStorage
   useEffect(() => {
-    persistDemoState({ demoMode, demoStep, demoMessages, showUploadPrompt, postPurchaseMsg, visionResult, tryOnResult })
-  }, [demoMode, demoStep, demoMessages, showUploadPrompt, postPurchaseMsg, visionResult, tryOnResult])
+    persistDemoState({ demoMode, demoStep, demoMessages, showUploadPrompt, postPurchaseMsg, visionResult, tryOnResult, selection, selectedSizes })
+  }, [demoMode, demoStep, demoMessages, showUploadPrompt, postPurchaseMsg, visionResult, tryOnResult, selection, selectedSizes])
 
   // The storefront cart. Items the shopper adds in chat are mirrored here so the
   // chat selection and the main cart stay in sync. (On the standalone membership
@@ -402,11 +410,11 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
     if (open) scrollToEnd()
   }, [messages, open])
 
-  // Detect a signed-in member. Re-check when the panel opens so a sign-in that
-  // happened after mount is picked up.
+  // Detect a signed-in member. For the demo, always use the hardcoded customer.
   useEffect(() => {
     if (typeof window === "undefined") return
-    setCustomerId(localStorage.getItem(LS_CUSTOMER_ID))
+    const stored = localStorage.getItem(LS_CUSTOMER_ID)
+    setCustomerId(stored || DEMO_USER.stripeCustomerId)
   }, [open])
 
   // When a member opens the panel, pull their Edit Club membership so we can
@@ -526,6 +534,10 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
       setInput("")
       return
     }
+
+    // Clear pinned try-on/vision results so they don't stick below new messages
+    if (tryOnResult) setTryOnResult(null)
+    if (visionResult) setVisionResult(null)
 
     // Regular text message to the AI agent
     void sendMessage({ text: value }, { body: { customerId } })
