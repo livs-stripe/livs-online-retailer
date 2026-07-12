@@ -690,6 +690,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                 budget={null}
                 onBack={() => setCheckoutOpen(false)}
                 onComplete={onOrderComplete}
+                preselectedSizes={selectedSizes}
               />
             </div>
           )}

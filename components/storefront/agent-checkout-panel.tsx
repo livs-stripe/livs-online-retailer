@@ -13,6 +13,7 @@ import { LS_CUSTOMER_ID } from "@/lib/membership"
 import { DEMO_MEMBERSHIP } from "@/lib/demo-membership"
 import { requiresSize } from "@/lib/sizing"
 import { SizeSelector } from "./size-selector"
+import { ProductImage } from "./product-image"
 import { getStripePromise } from "@/lib/stripe-client"
 import type { AgentOrder, Product } from "@/lib/types"
 
@@ -21,6 +22,7 @@ interface AgentCheckoutPanelProps {
   budget: number | null
   onBack: () => void
   onComplete: (order: AgentOrder) => void
+  preselectedSizes?: Record<string, string>
 }
 
 type Fulfillment = "delivery" | "pickup"
@@ -31,7 +33,7 @@ const AGENT = "aster_hem_stylist"
 // with real Stripe payment methods (Link, Apple/Google Pay or card) via the
 // Stripe Payment Element — no Shared Payment Token indirection. The "agent" touch
 // is kept light: the Stylist curates the look, the buyer pays for it directly.
-export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: AgentCheckoutPanelProps) {
+export function AgentCheckoutPanel({ products, budget, onBack, onComplete, preselectedSizes }: AgentCheckoutPanelProps) {
   const [fulfillment, setFulfillment] = useState<Fulfillment>("delivery")
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null)
@@ -52,15 +54,9 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
   const [memberResolved, setMemberResolved] = useState(false)
   // Customer session secret that lets the Payment Element show saved methods.
   const [customerSessionSecret, setCustomerSessionSecret] = useState<string | null>(null)
-  // Size selection state — keyed by product id
+  // Size selection state — seeded from sizes already chosen in the chat
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>(() => {
-    const initial: Record<string, string> = {}
-    for (const p of products) {
-      if ((p as Product & { selectedSize?: string }).selectedSize) {
-        initial[p.id] = (p as Product & { selectedSize?: string }).selectedSize!
-      }
-    }
-    return initial
+    return preselectedSizes ?? {}
   })
 
   // Check if all products that require sizes have one selected
@@ -206,7 +202,7 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
-        {/* Look summary — light agent touch */}
+        {/* Look summary header */}
         <div className="flex items-center justify-between gap-3 rounded-xl bg-secondary/60 px-4 py-3">
           <div className="min-w-0 leading-tight">
             <p className="truncate text-sm font-medium text-foreground">
@@ -215,19 +211,39 @@ export function AgentCheckoutPanel({ products, budget, onBack, onComplete }: Age
             <p className="text-xs text-muted-foreground">
               {products.length === 1
                 ? `${products[0].variant ?? products[0].colour ?? ''}${selectedSizes[products[0].id] ? ` · Size ${selectedSizes[products[0].id]}` : ''}`
-                : `${products.length} pieces · your Stylist's pick`}
+                : `${products.length} pieces`}
               {budget !== null && total <= budget ? ` · within your ${formatUsd(budget)} budget` : ""}
             </p>
           </div>
           <span className="shrink-0 font-serif text-xl text-foreground">{formatUsd(total)}</span>
         </div>
 
-        {/* Size selector — only for products that need sizing */}
-        {productsNeedingSize.length > 0 && (
-          <div className={cn("mt-4 rounded-xl border p-3 transition-colors", allSizesConfirmed ? "border-border bg-background" : "border-accent/30 bg-accent/5")}>
-            {productsNeedingSize.map(p => (
+        {/* Item breakdown */}
+        {products.length > 1 && (
+          <div className="mt-3 space-y-2">
+            {products.map(p => (
+              <div key={p.id} className="flex items-center gap-3 rounded-lg border border-border bg-background px-3 py-2">
+                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-md bg-secondary">
+                  <ProductImage src={p.image} alt={p.name} name={p.name} sizes="40px" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-xs font-medium text-foreground">{p.name}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {p.variant ?? p.colour ?? ''}{selectedSizes[p.id] ? ` · Size ${selectedSizes[p.id]}` : ''}
+                  </p>
+                </div>
+                <span className="shrink-0 text-xs font-medium text-foreground">{formatUsd(p.price)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Size selector — only shown for products that still need a size chosen */}
+        {productsNeedingSize.length > 0 && !allSizesConfirmed && (
+          <div className="mt-4 rounded-xl border border-accent/30 bg-accent/5 p-3">
+            {productsNeedingSize.filter(p => !selectedSizes[p.id]).map(p => (
               <div key={p.id} className={productsNeedingSize.length > 1 ? "mb-3 last:mb-0" : ""}>
-                {productsNeedingSize.length > 1 && (
+                {productsNeedingSize.filter(pp => !selectedSizes[pp.id]).length > 1 && (
                   <p className="mb-1.5 text-xs font-medium text-foreground">{p.name}</p>
                 )}
                 <SizeSelector

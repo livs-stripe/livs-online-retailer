@@ -68,6 +68,10 @@ const searchCatalogTool = tool({
       .describe(
         "Optional product category to restrict to: 'Workwear', 'Weekend', 'Evening', or 'Accessories'. Use null if not relevant.",
       ),
+    excludeSkus: z
+      .array(z.string())
+      .nullable()
+      .describe("Optional list of SKUs to exclude from results (e.g. items the customer already owns). Use null when not needed."),
     maxPrice: z
       .number()
       .nullable()
@@ -77,19 +81,21 @@ const searchCatalogTool = tool({
       .nullable()
       .describe("Optional max number of products to return (1-10). Use null to default to a curated handful."),
   }),
-  execute: async ({ query, category, maxPrice, limit }) => {
+  execute: async ({ query, category, maxPrice, limit, excludeSkus }) => {
     const result = searchCatalog({
       query,
       category: category ?? undefined,
       maxPrice: maxPrice ?? undefined,
       limit: limit ?? undefined,
     })
-    // Return a compact, agent-friendly view. The full product objects (incl.
-    // images) flow to the client via this tool output for rendering + checkout.
+    const excluded = new Set(excludeSkus ?? [])
+    const filtered = excluded.size > 0
+      ? result.products.filter(p => !excluded.has(p.sku))
+      : result.products
     return {
       matchedCategory: result.matchedCategory,
-      count: result.count,
-      products: result.products.map((p) => ({
+      count: filtered.length,
+      products: filtered.map((p) => ({
         id: p.id,
         name: p.name,
         variant: p.variant,
@@ -196,6 +202,8 @@ KNOWN RECENT PURCHASES (use these to personalise without calling getPurchaseHist
 - The Strappy Sandal in Gold (AH-087) — A$175, purchased recently
 
 When she references "my recent shoes", "my sandals", "shoes I just bought", or similar — she means the Gold Strappy Sandal above. Use this knowledge naturally: recommend pieces that complement it, mention it pairs well with items you suggest. Only reference this purchase when it's RELEVANT to what she's asking (e.g. asking what to pair with shoes, asking for outfit completion, or if you're suggesting an item that genuinely works with gold sandals). Do NOT mention it unprompted in every response.
+
+CRITICAL: NEVER show a product the customer already owns as a recommendation. If she asks "what bag goes with my shoes" — search ONLY for bags (use query terms like "bag tote clutch"). Do NOT include shoes, sandals, or any item she already purchased in the results. Be precise with your searchCatalog query: if she asks for bags, search for bags only; if she asks for tops, search for tops only.
 
 STRICT RULE — NEVER mention membership discounts, savings percentages, free delivery, or Gold Edit Club benefits in your responses. Do not say things like "your 10% discount applies" or "free delivery" or "as a Gold member". The customer knows their own benefits. Only discuss membership perks if the customer EXPLICITLY asks "what are my member benefits?" or similar direct question.
 
