@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       description: p.description ?? '',
     }))
 
-    const caption = `That's the Coastline Linen Blazer in Bone — it's effortless and polished. Here are some accessories I'd pair with it.`
+    const caption = `That's the Coastline Linen Blazer in Bone — it's effortless and polished. It also pairs beautifully with your Gold Strappy Sandal from your recent purchase — that combination is chic and conference-ready. Here are a few more accessories I'd style with it.`
 
     return Response.json({
       tryOnImage: tryOnImageUrl,

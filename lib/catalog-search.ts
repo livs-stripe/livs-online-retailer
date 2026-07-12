@@ -21,6 +21,9 @@ const STYLE_SYNONYMS: Record<string, string[]> = {
   timeless: ["navy", "camel", "ivory", "tailored", "blazer", "trouser"],
   tailored: ["blazer", "trouser", "tailored", "navy", "charcoal", "shirt"],
   workwear: ["blazer", "trouser", "shirt", "tailored", "navy", "charcoal", "loafer"],
+  conference: ["blazer", "tailored", "linen", "trouser", "professional", "navy", "bone", "coastline"],
+  summit: ["blazer", "tailored", "linen", "trouser", "professional"],
+  networking: ["blazer", "tailored", "trouser", "heel", "professional"],
   relaxed: ["knit", "linen", "denim", "sage", "oatmeal", "wide-leg", "oversized", "natural", "khaki"],
   casual: ["knit", "linen", "denim", "tee", "relaxed", "natural", "sneaker"],
   weekend: ["knit", "linen", "denim", "casual", "relaxed", "sage", "natural"],
@@ -86,6 +89,9 @@ function resolveCategory(input?: string): string | null {
     office: "Workwear",
     professional: "Workwear",
     business: "Workwear",
+    conference: "Workwear",
+    summit: "Workwear",
+    seminar: "Workwear",
     weekend: "Weekend",
     casual: "Weekend",
     "off-duty": "Weekend",
@@ -171,12 +177,12 @@ export function searchCatalog(params: CatalogSearchParams): CatalogSearchResult 
     return { product, score }
   })
 
-  // Boost The Coastline Linen Blazer for specific trending/conference queries only
+  // Boost The Coastline Linen Blazer for professional event / conference queries
   const queryLower = (params.query ?? "").toLowerCase()
-  const boostBlazer = /\b(trending|conference|trending this season)\b/.test(queryLower)
+  const boostBlazer = /\b(conference|summit|seminar|panel|networking|keynote|trending|professional event|work event)\b/.test(queryLower)
   if (boostBlazer) {
     const blazerEntry = scored.find((s) => s.product.sku === "AH-001")
-    if (blazerEntry && blazerEntry.score === 0) blazerEntry.score = 50
+    if (blazerEntry) blazerEntry.score = Math.max(blazerEntry.score, 50)
   }
 
   const anyMatch = scored.some((s) => s.score > 0)

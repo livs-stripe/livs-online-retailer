@@ -851,20 +851,6 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                   </li>
                 )}
 
-                {lastOrder && (
-                  <li className="flex items-start">
-                    <div className="w-full rounded-2xl border border-accent/40 bg-accent/5 px-3.5 py-3 text-sm text-foreground">
-                      <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-accent">
-                        <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                        Order confirmed
-                      </span>
-                      <p className="mt-1.5 leading-relaxed">
-                        Congratulations on your purchase! Your {lastOrder.itemCount === 1 ? "item is" : "items are"} on the way to you shortly. Check your email for a copy of your receipt.
-                      </p>
-                    </div>
-                  </li>
-                )}
-
                 {photoUploading && (
                   <li className="flex items-start">
                     <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-secondary px-3.5 py-2.5 text-sm text-muted-foreground">
@@ -1145,6 +1131,19 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                         Hem
                       </span>
                       <p>You&apos;re all set, Olivia. It&apos;ll be with you soon. Want to see what pairs with it?</p>
+                    </div>
+                  </li>
+                )}
+                {lastOrder && (
+                  <li className="flex items-start">
+                    <div className="w-full rounded-2xl border border-accent/40 bg-accent/5 px-3.5 py-3 text-sm text-foreground">
+                      <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-accent">
+                        <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                        Order confirmed
+                      </span>
+                      <p className="mt-1.5 leading-relaxed">
+                        Congratulations on your purchase! Your {lastOrder.itemCount === 1 ? "item is" : "items are"} on the way to you shortly. Check your email for a copy of your receipt.
+                      </p>
                     </div>
                   </li>
                 )}
