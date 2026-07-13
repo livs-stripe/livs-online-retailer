@@ -375,7 +375,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
 
   const [initialMessages] = useState<UIMessage[]>(() => loadPersistedMessages())
 
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, setMessages, status } = useChat({
     transport: new DefaultChatTransport({ api: "/api/stylist-chat" }),
     initialMessages: initialMessages.length > 0 ? initialMessages : undefined,
   })
@@ -515,6 +515,26 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
     return isMember ? MEMBER_SUGGESTIONS : SUGGESTIONS
   }, [isMember])
 
+  function appendUserPhotoMessage(text: string, imageFile: File) {
+    const preview = URL.createObjectURL(imageFile)
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `user-${Date.now()}`,
+        role: "user",
+        parts: [
+          { type: "text", text },
+          {
+            type: "file",
+            mediaType: imageFile.type || "image/jpeg",
+            url: preview,
+            filename: imageFile.name,
+          },
+        ],
+      },
+    ])
+  }
+
   function submit(text: string) {
     const value = text.trim()
     if (!value && !stagedPhoto) return
@@ -530,6 +550,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
     // If there's a staged photo, route to try-on
     if (stagedPhoto) {
       const prompt = value || "Style me for work"
+      appendUserPhotoMessage(prompt, stagedPhoto)
       handleStyleMe(stagedPhoto, prompt)
       setInput("")
       return
@@ -596,7 +617,12 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
 
     // In demo mode with upload prompt showing, go straight to try-on with the Blazer
     if (demoMode && showUploadPrompt) {
-      handleStyleMe(file, "How would I look in the Coastline Linen Blazer?")
+      const prompt = "How would I look in the Coastline Linen Blazer?"
+      setDemoMessages((prev) => [
+        ...prev,
+        { id: `demo-user-upload-${Date.now()}`, role: "user", text: prompt },
+      ])
+      handleStyleMe(file, prompt)
       e.target.value = ""
       return
     }
@@ -734,12 +760,12 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                       Hem
                     </span>
                     {demoPurchases.length > 0 ? (
-                      <p>Hi Olivia — welcome back to Aster &amp; Hem.</p>
+                      <p>Hi Olivia, welcome back to Aster &amp; Hem.</p>
                     ) : isMember ? (
-                      <p>Hi Olivia — welcome back to Aster &amp; Hem.</p>
+                      <p>Hi Olivia, welcome back to Aster &amp; Hem.</p>
                     ) : (
                       <p>
-                        Hi Olivia — welcome back to Aster &amp; Hem.
+                        Hi Olivia, welcome back to Aster &amp; Hem.
                       </p>
                     )}
                   </div>
@@ -768,7 +794,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                         <Sparkles className="h-3 w-3" aria-hidden="true" />
                         Hem
                       </span>
-                      <p>Hi Olivia — welcome back to Aster &amp; Hem. Want me to find what&apos;s missing from your wardrobe — or upload a photo and I&apos;ll style you from there?</p>
+                      <p>Hi Olivia, welcome back to Aster &amp; Hem. Want me to find what&apos;s missing from your wardrobe — or upload a photo and I&apos;ll style you from there?</p>
                     </div>
                   </li>
                 )}
@@ -776,6 +802,27 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                 {messages.map((m) => (
                   <li key={m.id} className={cn("flex flex-col gap-2", m.role === "user" ? "items-end" : "items-start")}>
                     {m.parts.map((part, i) => {
+                      if (part.type === "file" && part.mediaType.startsWith("image/")) {
+                        return (
+                          <div
+                            key={i}
+                            className={cn(
+                              "max-w-[85%] overflow-hidden rounded-2xl p-1",
+                              m.role === "user"
+                                ? "rounded-br-sm bg-foreground"
+                                : "rounded-tl-sm bg-secondary",
+                            )}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={part.url}
+                              alt={part.filename ?? "Uploaded photo"}
+                              className="max-h-40 w-full rounded-[10px] object-cover"
+                            />
+                          </div>
+                        )
+                      }
+
                       if (part.type === "text") {
                         if (!part.text.trim()) return null
                         return (
