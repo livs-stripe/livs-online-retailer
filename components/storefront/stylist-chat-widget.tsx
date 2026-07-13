@@ -106,6 +106,7 @@ interface TryOnResult {
     price: number
     image: string
     sizes: string[]
+    subcategory?: string
     description: string
   }[]
 }
@@ -224,8 +225,13 @@ function ProductTile({
                 <Plus className="h-3 w-3" aria-hidden="true" />
                 Add · {sizeSelected}
               </>
-            ) : (
+            ) : needsSize ? (
               "Select size"
+            ) : (
+              <>
+                <Plus className="h-3 w-3" aria-hidden="true" />
+                Add to bag
+              </>
             )}
           </button>
         </div>
@@ -1038,6 +1044,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                                 name: acc.name,
                                 variant: acc.colour,
                                 category: 'Accessories',
+                                subcategory: acc.subcategory,
                                 price: acc.price,
                                 image: acc.image,
                                 url: '#',
@@ -1052,6 +1059,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                                 name: acc.name,
                                 variant: acc.colour,
                                 category: 'Accessories',
+                                subcategory: acc.subcategory,
                                 price: acc.price,
                                 image: acc.image,
                                 url: '#',

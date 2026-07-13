@@ -19,8 +19,11 @@ export function getSizeType(product: { subcategory?: string }): SizeType {
   return 'clothing'
 }
 
-export function requiresSize(product: { subcategory?: string }): boolean {
-  return getSizeType(product) !== 'none'
+export function requiresSize(product: { subcategory?: string; sizes?: string[] }): boolean {
+  if (getSizeType(product) === 'none') return false
+  const sizes = product.sizes ?? []
+  if (sizes.length === 1 && sizes[0].toLowerCase() === 'one size') return false
+  return true
 }
 
 export function getSizeLabel(product: { subcategory?: string; sizes?: string[] }): string {
