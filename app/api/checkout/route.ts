@@ -209,7 +209,7 @@ export async function POST(req: NextRequest) {
       // physical goods. A membership-only purchase is digital, so we skip it.
       ...(hasPhysicalGoods
         ? {
-            shipping_address_collection: { allowed_countries: ["AU", "NZ", "US"] as const },
+            shipping_address_collection: { allowed_countries: ["AU"] as const },
             shipping_options: [
               {
                 shipping_rate_data: {

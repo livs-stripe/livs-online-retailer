@@ -520,8 +520,10 @@ function PaymentForm({
 
   return (
     <div className="space-y-3">
-      {/* Express wallets — Apple Pay / Google Pay / Link.
-          Renders nothing if no wallet is available on this device/browser. */}
+      {/* Express wallets — Apple Pay / Google Pay only. Link is intentionally
+          excluded here: the Express Checkout Link button opens checkout.link.com
+          in a new tab, which breaks the in-chat experience. Link stays inline via
+          the Payment Element below (email + one-time code, no tab redirect). */}
       <ExpressCheckoutElement
         onConfirm={handleExpressConfirm}
         onReady={({ availablePaymentMethods }) => {
@@ -531,7 +533,7 @@ function PaymentForm({
           buttonType: { applePay: "buy", googlePay: "buy" },
           buttonTheme: { applePay: "black", googlePay: "black" },
           layout: { maxColumns: 1, maxRows: 3, overflow: "auto" },
-          paymentMethods: { applePay: "always", googlePay: "always", link: "auto" },
+          paymentMethods: { applePay: "always", googlePay: "always", link: "never" },
         }}
       />
 
@@ -550,6 +552,7 @@ function PaymentForm({
         <AddressElement
           options={{
             mode: "shipping",
+            allowedCountries: ["AU"],
             defaultValues: {
               name: "Olivia Carline",
               address: { country: "AU" },
