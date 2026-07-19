@@ -381,9 +381,12 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
 
   const [initialMessages] = useState<UIMessage[]>(() => loadPersistedMessages())
 
-  const { messages, sendMessage, setMessages, status } = useChat({
+  const { messages, sendMessage, setMessages, status, error: chatError } = useChat({
     transport: new DefaultChatTransport({ api: "/api/stylist-chat" }),
     initialMessages: initialMessages.length > 0 ? initialMessages : undefined,
+    onError: (err) => {
+      console.error("[hem-chat] Error:", err)
+    },
   })
 
   // Persist AI chat messages to sessionStorage
@@ -521,24 +524,11 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
     return isMember ? MEMBER_SUGGESTIONS : SUGGESTIONS
   }, [isMember])
 
-  function appendUserPhotoMessage(text: string, imageFile: File) {
-    const preview = URL.createObjectURL(imageFile)
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `user-${Date.now()}`,
-        role: "user",
-        parts: [
-          { type: "text", text },
-          {
-            type: "file",
-            mediaType: imageFile.type || "image/jpeg",
-            url: preview,
-            filename: imageFile.name,
-          },
-        ],
-      },
-    ])
+  // Local-only user messages for try-on requests (NOT sent through useChat to avoid blocking it)
+  const [tryOnUserMessage, setTryOnUserMessage] = useState<string | null>(null)
+
+  function appendUserPhotoMessage(text: string) {
+    setTryOnUserMessage(text)
   }
 
   function submit(text: string) {
@@ -556,7 +546,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
     // If there's a staged photo, route to try-on
     if (stagedPhoto) {
       const prompt = value || "Style me for work"
-      appendUserPhotoMessage(prompt, stagedPhoto)
+      appendUserPhotoMessage(prompt)
       handleStyleMe(stagedPhoto, prompt)
       setInput("")
       return
@@ -565,6 +555,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
     // Clear pinned try-on/vision results so they don't stick below new messages
     if (tryOnResult) setTryOnResult(null)
     if (visionResult) setVisionResult(null)
+    if (tryOnUserMessage) setTryOnUserMessage(null)
 
     // Regular text message to the AI agent
     void sendMessage({ text: value }, { body: { customerId } })
@@ -922,6 +913,15 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                     <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-secondary px-3.5 py-2.5 text-sm text-muted-foreground">
                       <Camera className="h-3.5 w-3.5 animate-pulse text-accent" aria-hidden="true" />
                       Analysing your photo…
+                    </div>
+                  </li>
+                )}
+
+                {/* Try-on user message (rendered outside useChat to avoid blocking it) */}
+                {tryOnUserMessage && (
+                  <li className="flex items-end justify-end">
+                    <div className="max-w-[85%] rounded-2xl rounded-br-sm bg-foreground px-3.5 py-2.5 text-sm leading-relaxed text-background">
+                      <p className="text-pretty">{tryOnUserMessage}</p>
                     </div>
                   </li>
                 )}
