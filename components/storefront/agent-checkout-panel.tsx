@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Elements, PaymentElement, ExpressCheckoutElement, AddressElement, useElements, useStripe } from "@stripe/react-stripe-js"
+import { Elements, PaymentElement, ExpressCheckoutElement, AddressElement, LinkAuthenticationElement, useElements, useStripe } from "@stripe/react-stripe-js"
 import type { Appearance, StripeExpressCheckoutElementConfirmEvent } from "@stripe/stripe-js"
 import { Sparkles, Check, Loader2, Lock, Truck, Store, ChevronLeft, ShieldCheck, BadgePercent } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,7 @@ import { formatUsd } from "@/lib/format"
 import { computeAgentPrice, isValidLinenNumber, STANDARD_SHIPPING, FREE_SHIP_THRESHOLD_MEMBER } from "@/lib/shipping"
 import { LS_CUSTOMER_ID } from "@/lib/membership"
 import { DEMO_MEMBERSHIP } from "@/lib/demo-membership"
+import { DEMO_USER } from "@/lib/demo-user"
 import { requiresSize } from "@/lib/sizing"
 import { SizeSelector } from "./size-selector"
 import { ProductImage } from "./product-image"
@@ -560,6 +561,11 @@ function PaymentForm({
           }}
         />
       </div>
+
+      {/* Link authentication — pre-fills email so Link can auto-populate saved details */}
+      <LinkAuthenticationElement
+        options={{ defaultValues: { email: DEMO_USER.email } }}
+      />
 
       {/* Card form */}
       <PaymentElement
