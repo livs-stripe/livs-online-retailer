@@ -136,19 +136,9 @@ export async function POST(req: NextRequest) {
     const intent = await stripe.paymentIntents.create({
       amount: amountCents,
       currency: "usd", // USD required for the ACS preview
-      // Card only (plus Apple Pay / Google Pay, which surface automatically with
-      // `card`). We intentionally DON'T add "link" as a standalone method: that
-      // renders a Link wallet tab whose secure auth window can't open inside our
-      // embedded preview iframe and gets kicked out to a new browser tab. Link
-      // still works fully INLINE in the cart via the LinkAuthenticationElement
-      // (email + one-time passcode rendered inside Stripe's own element), which
-      // also prefills the returning customer's saved card — no redirect/new tab.
-      //
-      // NOTE: Afterpay/Clearpay and Klarna are NOT offered. On this AU account
-      // those BNPL methods only support AUD, but the PaymentIntent is in USD, so
-      // including them makes Stripe reject the intent ("afterpay_clearpay only
-      // supports aud") and checkout fails to start.
-      payment_method_types: ["card"],
+      // Card + Link (plus Apple Pay / Google Pay, which surface automatically
+      // with `card`). Link auto-populates the customer's saved details inline.
+      payment_method_types: ["card", "link"],
       description: `Aster & Hem — ${itemCount} item${itemCount === 1 ? "" : "s"}`,
       ...(customerId ? { customer: customerId } : {}),
       metadata,

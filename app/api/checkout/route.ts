@@ -177,15 +177,9 @@ export async function POST(req: NextRequest) {
 
     const session = await stripe.checkout.sessions.create({
       ui_mode: "embedded_page",
-      // Card payments stay fully inline (onComplete fires on the client).
-      // Redirect-based methods like Klarna & Afterpay require a redirect to the
-      // provider, so we use "if_required" + a return_url that brings the shopper
-      // back to a confirmation page only when a redirect actually happens.
       redirect_on_completion: "if_required",
       return_url: `${origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
-      // Disable Stripe Adaptive Pricing so the checkout always shows the default
-      // USD amounts (we present these as AU pricing) rather than converting to
-      // the shopper's local currency.
+      locale: "en",
       adaptive_pricing: { enabled: false },
       // Attach the purchase to the signed-in member so it (and its savings)
       // appears on their membership dashboard.
