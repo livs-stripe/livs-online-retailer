@@ -879,11 +879,12 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                           )
                         }
                         const allProducts = (part.output as { products?: ChatProduct[] })?.products ?? []
-                        const products = allProducts.filter(p => {
+                        const deduped = allProducts.filter(p => {
                           if (seenProductIds.has(p.id)) return false
                           seenProductIds.add(p.id)
                           return true
                         })
+                        const products = deduped.length % 2 === 0 ? deduped : deduped.slice(0, -1)
                         if (products.length === 0) return null
                         return (
                           <div key={i} className="grid w-full grid-cols-2 gap-2">
