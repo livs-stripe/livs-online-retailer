@@ -757,12 +757,12 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                       Hem
                     </span>
                     {demoPurchases.length > 0 ? (
-                      <p>Hi Olivia, welcome back to Aster &amp; Hem.</p>
+                      <p>Hi Liv, welcome back to Aster &amp; Hem.</p>
                     ) : isMember ? (
-                      <p>Hi Olivia, welcome back to Aster &amp; Hem.</p>
+                      <p>Hi Liv, welcome back to Aster &amp; Hem.</p>
                     ) : (
                       <p>
-                        Hi Olivia, welcome back to Aster &amp; Hem.
+                        Hi Liv, welcome back to Aster &amp; Hem.
                       </p>
                     )}
                   </div>
@@ -791,7 +791,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                         <Sparkles className="h-3 w-3" aria-hidden="true" />
                         Hem
                       </span>
-                      <p>Hi Olivia, welcome back to Aster &amp; Hem. Want me to find what&apos;s missing from your wardrobe — or upload a photo and I&apos;ll style you from there?</p>
+                      <p>Hi Liv, welcome back to Aster &amp; Hem. Want me to find what&apos;s missing from your wardrobe — or upload a photo and I&apos;ll style you from there?</p>
                     </div>
                   </li>
                 )}
@@ -1207,7 +1207,7 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                         <Sparkles className="h-3 w-3" aria-hidden="true" />
                         Hem
                       </span>
-                      <p>You&apos;re all set, Olivia. It&apos;ll be with you soon. Want to see what pairs with it?</p>
+                      <p>You&apos;re all set, Liv. It&apos;ll be with you soon. Want to see what pairs with it?</p>
                     </div>
                   </li>
                 )}

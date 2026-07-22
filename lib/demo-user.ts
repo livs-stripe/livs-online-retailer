@@ -1,9 +1,9 @@
 export const DEMO_USER = {
   id: 'cus_UlhZ4rEENaefWF',
-  name: 'Olivia Carline',
-  firstName: 'Olivia',
+  name: 'Liv',
+  firstName: 'Liv',
   email: 'livs@stripe.com',
-  initials: 'OC',
+  initials: 'L',
   stripeCustomerId: 'cus_UlhZ4rEENaefWF',
 } as const
 
