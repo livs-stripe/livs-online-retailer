@@ -796,7 +796,9 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                   </li>
                 )}
 
-                {messages.map((m) => (
+                {messages.map((m) => {
+                  const seenProductIds = new Set<string>()
+                  return (
                   <li key={m.id} className={cn("flex flex-col gap-2", m.role === "user" ? "items-end" : "items-start")}>
                     {m.parts.map((part, i) => {
                       if (part.type === "file" && part.mediaType.startsWith("image/")) {
@@ -876,7 +878,12 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                             </div>
                           )
                         }
-                        const products = (part.output as { products?: ChatProduct[] })?.products ?? []
+                        const allProducts = (part.output as { products?: ChatProduct[] })?.products ?? []
+                        const products = allProducts.filter(p => {
+                          if (seenProductIds.has(p.id)) return false
+                          seenProductIds.add(p.id)
+                          return true
+                        })
                         if (products.length === 0) return null
                         return (
                           <div key={i} className="grid w-full grid-cols-2 gap-2">
@@ -897,7 +904,8 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                       return null
                     })}
                   </li>
-                ))}
+                  )
+                })}
 
                 {busy && (
                   <li className="flex items-start">
