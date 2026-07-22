@@ -179,7 +179,7 @@ export function searchCatalog(params: CatalogSearchParams): CatalogSearchResult 
 
   // Boost The Coastline Linen Blazer for professional event / conference queries
   const queryLower = (params.query ?? "").toLowerCase()
-  const boostBlazer = /\b(conference|summit|seminar|panel|networking|keynote|trending|professional event|work event)\b/.test(queryLower)
+  const boostBlazer = /\b(conference|summit|seminar|panel|networking|keynote|professional event|work event)\b/.test(queryLower)
   if (boostBlazer) {
     const blazerEntry = scored.find((s) => s.product.sku === "AH-001")
     if (blazerEntry) blazerEntry.score = Math.max(blazerEntry.score, 50)
