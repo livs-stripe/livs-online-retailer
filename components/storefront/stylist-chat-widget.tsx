@@ -375,6 +375,8 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
     const saved = loadDemoState()
     return saved?.selectedSizes ?? {}
   })
+  // Confetti celebration on successful payment
+  const [showConfetti, setShowConfetti] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textInputRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -676,7 +678,11 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
     // too — otherwise they'd linger there and could be purchased again.
     for (const p of selectedItems) removeFromCart(p.id)
     setSelection({})
+    setSelectedSizes({})
     setCheckoutOpen(false)
+    // Celebration confetti
+    setShowConfetti(true)
+    setTimeout(() => setShowConfetti(false), 3500)
     // Let the My Edit Club page refresh its purchases and member savings.
     notifyOrderPlaced()
     // Step 8 of demo flow — post-purchase suggestion
@@ -715,6 +721,35 @@ export function StylistChatWidget({ externalOpen }: { externalOpen?: boolean } =
                 onComplete={onOrderComplete}
                 preselectedSizes={selectedSizes}
               />
+            </div>
+          )}
+
+          {/* Confetti celebration overlay */}
+          {showConfetti && (
+            <div className="pointer-events-none absolute inset-0 z-50 overflow-hidden">
+              {Array.from({ length: 60 }).map((_, i) => (
+                <span
+                  key={i}
+                  className="absolute animate-[confetti-fall_2.5s_ease-out_forwards]"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `-5%`,
+                    animationDelay: `${Math.random() * 1.2}s`,
+                    backgroundColor: ["#C4714A", "#E8C56D", "#4A7C59", "#7C4AC4", "#C44A6B", "#4A9CC4", "#F5A623"][i % 7],
+                    width: `${6 + Math.random() * 6}px`,
+                    height: `${6 + Math.random() * 6}px`,
+                    borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+                    transform: `rotate(${Math.random() * 360}deg)`,
+                  }}
+                />
+              ))}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="animate-[confetti-pop_0.6s_ease-out_forwards] rounded-2xl bg-white/95 px-6 py-4 text-center shadow-xl backdrop-blur-sm">
+                  <p className="text-2xl">🎉</p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">Order confirmed!</p>
+                  <p className="text-xs text-muted-foreground">Your purchase is on its way</p>
+                </div>
+              </div>
             </div>
           )}
 
